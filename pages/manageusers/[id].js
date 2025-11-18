@@ -46,17 +46,17 @@ export default function UserDetailPage() {
   }
 
   return (
-     
-         <>
-            <Link href="/manageusers" className="text-blue-600 hover:underline text-sm">
-         <div className='flex items-center gap-2 mb-4'>
-          <button className='items-center bg-gray-50 hover:bg-gray-100 rounded-md p-2'><span className=' text-2xl cursor-pointer'>←</span></button> 
+    <>
+      <Link href="/manageusers" className="text-blue-600 hover:underline text-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <button className="items-center bg-gray-50 hover:bg-gray-100 rounded-md p-2">
+            <span className="text-2xl cursor-pointer">←</span>
+          </button>
           <span>Back to Users</span>
-       </div>
-        </Link>
+        </div>
+      </Link>
+
       <UserDetailCard user={user} />
-         
-         </>
- 
+    </>
   );
 }
