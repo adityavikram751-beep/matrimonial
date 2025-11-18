@@ -26,14 +26,6 @@
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/manageusers/(?<nxtPid>[^/]+?)(?:/)?$"
-    },
-    {
-      "page": "/user/[id]",
-      "regex": "^/user/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPid": "nxtPid"
-      },
-      "namedRegex": "^/user/(?<nxtPid>[^/]+?)(?:/)?$"
     }
   ],
   "staticRoutes": [
