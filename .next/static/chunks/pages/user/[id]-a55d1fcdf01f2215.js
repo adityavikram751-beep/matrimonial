@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[853],{76602:(_,n,u)=>{(window.__NEXT_P=window.__NEXT_P||[]).push(["/user/[id]",function(){return u(80036)}])},80036:()=>{}},_=>{_.O(0,[636,593,792],()=>_(_.s=76602)),_N_E=_.O()}]);

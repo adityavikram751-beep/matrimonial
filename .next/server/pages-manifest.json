@@ -1,6 +1,19 @@
 {
-  "/": "pages/index.js",
+  "/_error": "pages/_error.js",
   "/_app": "pages/_app.js",
   "/_document": "pages/_document.js",
-  "/dashboard": "pages/dashboard.js"
+  "/analytics": "pages/analytics.js",
+  "/login": "pages/login.js",
+  "/adminprofile": "pages/adminprofile.js",
+  "/managesubadmin": "pages/managesubadmin.js",
+  "/": "pages/index.js",
+  "/manageusers/[id]": "pages/manageusers/[id].js",
+  "/dashboard": "pages/dashboard.js",
+  "/manageusers": "pages/manageusers.js",
+  "/profileDetails": "pages/profileDetails.js",
+  "/verificationrequest": "pages/verificationrequest.js",
+  "/CraeteSubAdmin": "pages/CraeteSubAdmin.js",
+  "/user/[id]": "pages/user/[id].js",
+  "/reportedcontent": "pages/reportedcontent.js",
+  "/logout": "pages/logout.js"
 }
