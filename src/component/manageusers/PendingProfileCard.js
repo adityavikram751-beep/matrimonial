@@ -1,51 +1,61 @@
-import { ArrowDown, MoreHorizontal, User } from 'lucide-react';
+import { ArrowDown, MoreHorizontal } from "lucide-react";
 
 export default function PendingProfileCard({ data }) {
-  const profileImages = Array.isArray(data.profileImage) ? data.profileImage : [];
+  const images = Array.isArray(data.profileImage) ? data.profileImage : [];
+
+  const formatCount = (value) => {
+    if (value >= 1000000) return (value / 1_000_000).toFixed(2) + " M";
+    if (value >= 1000) return (value / 1000).toFixed(2) + " K";
+    return value;
+  };
 
   return (
-    <div className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-xl p-4 w-full max-w-sm">
-      <div className="flex items-center justify-between flex-wrap gap-y-2">
-        <div className="flex items-center space-x-2">
-          <div className="bg-yellow-300 text-yellow-800 rounded-full w-5 h-5 flex items-center justify-center">
-            <MoreHorizontal size={14} />
+    <div className="bg-white border border-gray-400 rounded-xl shadow-sm px-5 py-4 w-full max-w-sm">
+
+      {/* Title Row */}
+      <div className="flex items-center space-x-2">
+        <div className="w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center">
+          <MoreHorizontal size={14} className="text-white" />
+        </div>
+
+        <span className="font-bold text-gray-900 text-xl">
+          Pending Profile
+        </span>
+      </div>
+
+      {/* Value + % */}
+      <div className="flex items-center justify-between mt-2">
+
+        {/* Big Value */}
+        <div className="text-4xl font-bold text-gray-900">
+          {formatCount(data.count)}
+        </div>
+
+        {/* Right side – ALWAYS RED, ALWAYS DOWN ARROW */}
+        <div className="flex flex-col items-end leading-tight text-red-600">
+          <div className="flex items-center font-bold text-xl">
+            <ArrowDown size={34} className="mr-1" />
+            <span>{Math.abs(data.change)} % Vs</span>
           </div>
-          <span className="font-medium text-gray-800 text-sm sm:text-base">Pending Profile</span>
+
+          <span className="text-xl">last week</span>
         </div>
+      </div>
+      
+
+      {/* Profile images row */}
+      <div className="flex items-center mt-4 -space-x-2">
+        {images.map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            alt="profile"
+            className="w-9 h-9 rounded-full border-2 border-red-600 object-cover shadow"
+            onError={(e) => (e.target.style.display = "none")}
+          />
+        ))}
       </div>
 
-      <div className="mt-2 text-2xl sm:text-3xl font-bold text-gray-900">
-        {data.count.toLocaleString()}
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-3 gap-2">
-        <div className="flex items-center text-red-600 text-sm">
-          <ArrowDown size={16} className="mr-1" />
-          <span>{Math.abs(data.change)}% Vs</span>&nbsp;<span>last week</span>
-        </div>
-        <div className="flex -space-x-2 overflow-hidden">
-          {profileImages.length > 0 ? (
-            profileImages.map((src, i) => (
-              <img
-                key={i}
-                src={src}
-                className="w-8 h-8 rounded-full border-2 border-red-500 shadow-sm object-cover"
-                alt="Profile"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-            ))
-          ) : (
-            [...Array(Math.min(data.count, 4))].map((_, i) => (
-              <div
-                key={`pending-placeholder-${i}`}
-                className="w-8 h-8 rounded-full border-2 border-red-500 bg-gray-200 flex items-center justify-center text-gray-500 shadow-sm"
-              >
-                <User size={18} />
-              </div>
-            ))
-          )}
-        </div>
-      </div>
     </div>
   );
 }

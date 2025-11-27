@@ -1,52 +1,76 @@
+'use client'
+
 import AnalyticsChart from '@/src/component/dashboard/AnalyticsChart'
-import Search from '@/src/component/dashboard/Search'
 import TopSection from '@/src/component/dashboard/TopSection'
 import UserTable from '@/src/component/dashboard/UserTable'
 import useAuthGuard from '@/utils/withAuth'
-import React, { useState , useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-// import { API_URL } from '../api/apiURL';  
-
 
 const Index = () => {
-  useAuthGuard();
+  useAuthGuard()
 
   const placeholders = [
-    'Search by User Name',
-    'Search by User Id',
-    'Search by User No',
-  ];
+    'Search By User Name',
+    'Search By User ID',
+    'Search By User Mobile'
+  ]
 
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
-    }, 1000); 
-
-    return () => clearInterval(interval);
-  }, []);
-
-
+      setIndex((prev) => (prev + 1) % placeholders.length)
+    }, 1200)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-   <>
-   {/* <Search/> */}
-   <div className=' pl-5 pr-5 p-2 flex justify-between items-center mb-6'>
-    <div><h1 className='text-2xl font-bold mb-6 text-gray-700'>Dashboard</h1></div>
-    <div className='flex gap-5 justify-center items-center'>
-      {/* <div className='flex gap-2 justify-center items-center border border-gray-300 rounded-md px-2 py-1'>
-        <Image src="/search.png"  width={20} height={20} alt='search'/>
-        <input type='text'  placeholder={placeholders[index]} className='border-none border-gray-300 rounded-md px-2 w-[300px] py-1 focus:outline-none focus:none focus:ring-blue-500'/>  
-      </div> */}
-      <div><Image className='cursor-pointer' src="/notification.png" width={35} height={35} alt="Notification" /></div>
+    <div className="flex w-full">
+
+      {/* ⭐ FIXED SIDEBAR */}
+      <div className="fixed top-0 left-0 h-full w-[250px] bg-white shadow-md border-r p-4">
+      </div>
+
+      {/* ⭐ SLIM TOP BAR */}
+      <div
+        className="
+          fixed top-0 left-[250px]
+          w-[calc(100%-250px)]
+          h-[65px]     /* <-- TOP BAR PATLA KAR DIYA */
+          bg-[#F7F7F7] border-b shadow-sm
+          flex items-center justify-between
+          px-10 z-50
+        "
+      >
+
+        {/* LEFT → TITLE */}
+        <h1 className="text-[28px] font-extrabold text-black">Dashboard</h1>
+
+        {/* RIGHT → SEARCH + NOTIFICATION */}
+        <div className="flex items-center space-x-6">
+
+        
+
+          {/* NOTIFICATION */}
+          <div className="relative cursor-pointer">
+            <Image src="/notification.png" width={28} height={28} alt="bell" />
+            <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ⭐ MAIN CONTENT */}
+      <div className=" mt-[75px] w-full px-6">
+        <TopSection />
+        <AnalyticsChart />
+        <UserTable />
+      </div>
+
     </div>
-    </div>
- <TopSection/>
- <AnalyticsChart/>
-  <UserTable/>
-   </>
   )
 }
 
-export default Index;
+export default Index

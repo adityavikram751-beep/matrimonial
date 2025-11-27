@@ -1,41 +1,44 @@
-import React, { useState } from 'react';
-import { Search as SearchIcon, Bell } from 'lucide-react';
+import React, { useState } from "react";
+import { Search as SearchIcon } from "lucide-react";
 
-const Search = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      console.log('Search triggered for:', searchQuery);
-      // You can add actual search logic here
-    }
-  };
-
+const Search = ({ setSearch, topSearch, setTopSearch }) => {
   return (
-    <div className="border-slate-700 w-full align-item-center ">
-      <div className="flex justify-between border-b-2 pb-2 gray-400">
-        <h1 className="text-xl text-gray-700 font-semibold">Varification Requests</h1>
+    <div
+      className="bg-gray-100 px-6 py-4 shadow-sm border-b fixed top-0 z-50 flex items-center justify-between"
+      style={{
+        left: "250px",
+        width: "calc(100% - 250px)",
+      }}
+    >
+      <h1 className="text-2xl font-bold text-gray-900">
+        Verification Request
+      </h1>
 
-        <div className="flex items-center gap-4">
-          {/* Search Input */}
-          <div className="relative  w-full sm:w-72">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Search By User ID"
-              className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
-            />
-            <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
-          </div>
+      <div className="flex items-center gap-5">
 
-          {/* Notification Bell */}
-          <div className="relative">
-            <Bell className="h-6 w-6 text-yellow-500" />
-            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white" />
-          </div>
+        {/* TOP SEARCH BAR */}
+        <div className="flex items-center bg-white border border-gray-300 rounded-full px-4 py-2 w-[350px] shadow-md">
+          <SearchIcon className="w-5 h-5 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Search By User ID"
+            className="ml-2 w-full outline-none text-gray-700"
+            value={topSearch}
+            onChange={(e) => {
+              setTopSearch(e.target.value);  // Only top search box updates
+              setSearch(e.target.value);     // Global filter
+            }}
+          />
         </div>
+
+        {/* Notification Icon */}
+        <div className="relative">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="#FFC107">
+            <path d="M12 24c1.104 0 2-.897 2-2h-4c0 1.103.896 2 2 2zm6.707-5l1.293 1.293V21H4v-1.707L5.293 19H6v-7c0-3.309 2.691-6 6-6s6 2.691 6 6v7h.707zM18 18H6v-7c0-2.757 2.243-5 5-5s5 2.243 5 5v7z"/>
+          </svg>
+          <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full" />
+        </div>
+
       </div>
     </div>
   );

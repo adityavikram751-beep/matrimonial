@@ -1,48 +1,45 @@
-import { useEffect, useState } from 'react';
-import { API_URL } from '../api/apiURL';
-// import Papa from 'papaparse';
-import jsPDF from 'jspdf';
-import Image from 'next/image';
+"use client";
 
+import { useEffect, useState } from "react";
+import { API_URL } from "../api/apiURL";
+import Image from "next/image";
 
 export default function UsersPage() {
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [genderFilter, setGenderFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [genderFilter, setGenderFilter] = useState("");
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  /* ------------------ BANNER STATES ------------------ */
+  const [banners, setBanners] = useState([]);
+  const [bannerLoading, setBannerLoading] = useState(false);
+
+  const limit = 10;
+
+  /* ------------------ USERS FETCH ------------------ */
   const fetchUsers = async () => {
     try {
       setLoading(true);
+
       const params = new URLSearchParams({
         search,
         status: statusFilter,
         gender: genderFilter,
         page: currentPage,
-        limit: usersPerPage,
+        limit,
       });
 
-      const response = await fetch(`${API_URL}/admin/getUser?${params.toString()}`);
-
-
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const res = await fetch(`${API_URL}/admin/getUser?${params.toString()}`);
+      const data = await res.json();
 
       setUsers(data.data || []);
       setTotalPages(data.totalPages || 1);
       setLoading(false);
-    } catch (error) {
-      console.error('Error fetching users:', error);
+    } catch {
       setLoading(false);
-
     }
   };
 
@@ -50,72 +47,150 @@ export default function UsersPage() {
     fetchUsers();
   }, [search, statusFilter, genderFilter, currentPage]);
 
-  // const handleExportCSV = () => {
-  //    const csv = Papa.unparse(users);
-  //       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  //       const url = URL.createObjectURL(blob);
-  //       const a = document.createElement('a');
-  //       a.href = url;
-  //       a.download = 'users.csv';
-  //       a.click();
-  // };
+  /* ------------------ EXPORT CSV ------------------ */
+  const handleExportCSV = () => {
+    if (!users.length) return;
 
+    const headers = Object.keys(users[0]);
+    const csvRows = [];
 
+    csvRows.push(headers.join(","));
 
-
-  const handleExportPDF = () => {
-  const doc = new jsPDF();
-
-  const headers = Object.keys(users[0]);
-
-  const rows = users.map(user => headers.map(header => user[header]));
-
-  doc.text('User Data', 10, 10);
-
-  let y = 20;
-
-  headers.forEach((header, i) => {
-    doc.text(header, 10 + (i * 40), y);
-  });
-
-  
-  rows.forEach((row, rowIndex) => {
-    row.forEach((cell, cellIndex) => {
-      doc.text(String(cell), 10 + (cellIndex * 40), y + 10 + (rowIndex * 10));
+    users.forEach((u) => {
+      const row = headers.map((h) => `"${u[h]}"`);
+      csvRows.push(row.join(","));
     });
-  });
 
-  doc.save('users.pdf');
-};
+    const csvString = csvRows.join("\n");
 
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
 
-
-  const changePage = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "users.csv";
+    a.click();
   };
+
+  /* ------------------ BANNER FETCH ------------------ */
+  const fetchBanners = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/banners`);
+      const data = await res.json();
+      setBanners(data.data || []);
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  /* ------------------ ADD BANNER ------------------ */
+  const handleAddBanner = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("banner", file);
+
+    try {
+      setBannerLoading(true);
+
+      const res = await fetch(`${API_URL}/api/banners`, {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) return;
+
+      setBanners((prev) => [...prev, ...data.data]);
+    } finally {
+      setBannerLoading(false);
+    }
+  };
+
+  /* ------------------ UPDATE BANNER ------------------ */
+  const handleUpdateBanner = async (id) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const fd = new FormData();
+      fd.append("banner", file);
+
+      try {
+        setBannerLoading(true);
+
+        const res = await fetch(`${API_URL}/api/banners/${id}`, {
+          method: "PUT",
+          body: fd,
+        });
+
+        const data = await res.json();
+        if (!res.ok) return;
+
+        fetchBanners();
+      } finally {
+        setBannerLoading(false);
+      }
+    };
+
+    input.click();
+  };
+
+  /* ------------------ DELETE BANNER ------------------ */
+  const handleDeleteBanner = async (id) => {
+    try {
+      setBannerLoading(true);
+
+      await fetch(`${API_URL}/api/banners/${id}`, {
+        method: "DELETE",
+      });
+
+      setBanners((prev) => prev.filter((b) => b._id !== id));
+    } finally {
+      setBannerLoading(false);
+    }
+  };
+
+  /* ------------------ PAGINATION ------------------ */
+  const windowSize = 4;
+  const start = Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
+  const end = Math.min(start + windowSize - 1, totalPages);
 
   return (
     <div className="p-6 max-w-full mx-[-12px]">
-      <div className="bg-white rounded-xl shadow border border-gray-400 p-4">
-        <div className="flex border-1 p-1 rounded flex-wrap justify-between items-center mb-4 gap-4">
-          <div className='flex items-center gap-2 p-2 shadow border border-[rgba(255, 255, 255, 1)] rounded-xl'>
-            <Image src="/search.png" width={20} height={20} alt='Saerch'/>
-            <input
-            type="text"
-            placeholder="Search By User Name"
-            className="border-none focus:outline-0"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-          </div>
-          
 
-          <div className="flex   gap-2 flex-wrap">
+      {/* ---------------- USERS TABLE ---------------- */}
+      <div className="bg-white rounded-2xl shadow-md border border-gray-500 p-4">
+
+        {/* SEARCH + FILTERS */}
+        <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+
+          {/* SEARCH BOX */}
+          <div className="flex items-center gap-2 px-4 py-2 border rounded-xl bg-white shadow-sm w-[300px]">
+            <Image src="/search.png" width={18} height={18} alt="Search" />
+            <input
+              type="text"
+              placeholder="Search By User ID"
+              className="w-full outline-none"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+
+          {/* FILTERS + EXPORT */}
+          <div className="flex items-center gap-3">
             <select
-              className="border px-1 bg-gray-200 hover:bg-gray-100 transition ease-in-out cursor-pointer  rounded"
+              className="border bg-gray-200 px-3 py-2 rounded-lg"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -123,13 +198,13 @@ export default function UsersPage() {
               }}
             >
               <option value="">Status</option>
-              <option>approved</option>
-              <option>pending</option>
-              <option>blocked</option>
+              <option>Approved</option>
+              <option>Pending</option>
+              <option>Blocked</option>
             </select>
 
             <select
-              className="border bg-gray-200 hover:bg-gray-100 px-2 py-2 cursor-pointer rounded text-sm"
+              className="border bg-gray-200 px-3 py-2 rounded-lg"
               value={genderFilter}
               onChange={(e) => {
                 setGenderFilter(e.target.value);
@@ -141,91 +216,90 @@ export default function UsersPage() {
               <option>Female</option>
             </select>
 
+            {/* EXPORT CSV BUTTON */}
             <button
-              onClick={handleExportPDF}
-              className="bg-gray-200 border px-4 py-2 rounded cursor-pointer text-sm hover:bg-gray-100"
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-gray-200 rounded-lg border border-gray-600 hover:bg-gray-100"
             >
               Export CSV
             </button>
           </div>
+
         </div>
 
-        {/* Table */}
-        <div className="overflow-auto">
-          <table className="min-w-full text-sm border-t border-gray-400">
+        {/* ---------------- TABLE ---------------- */}
+        <div className="overflow-auto border-t border-gray-300">
+          <table className="min-w-full text-sm">
             <thead className="bg-gray-100">
               <tr>
                 {[
-                  'User ID',
-                  'User Name',
-                  'Location',
-                  'Gender',
-                  'Joined',
-                  'Verified',
-                  'Status',
-                  'Last Active',
-                ].map((head) => (
+                  "User ID",
+                  "User Name",
+                  "Location",
+                  "Gender",
+                  "Joined",
+                  "Verified",
+                  "Status",
+                  "Last Active",
+                ].map((h) => (
                   <th
-                    key={head}
-                    className="text-left px-3 py-2 border-b border-gray-400"
+                    key={h}
+                    className="text-left px-4 py-3 border-b border-gray-300 font-semibold text-gray-800"
                   >
-                    {head}
+                    {h}
                   </th>
                 ))}
               </tr>
             </thead>
+
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="flex ml-[400px] items-center justify-center w-100 py-4">
-                    <Image className='text-center' src="/loading2.gif" width={100} height={100} alt='loading..' />
+                  <td colSpan={8} className="text-center py-4 text-gray-500">
+                    Loading...
                   </td>
                 </tr>
-              ) : users.length > 0 ? (
+              ) : users.length ? (
                 users.map((user, idx) => (
                   <tr
                     key={idx}
-                    className="border-b border-gray-600 hover:bg-gray-50"
+                    className="border-b border-gray-200 hover:bg-gray-50"
                   >
-                    <td className="px-3 py-2">{user.id}</td>
-                    <td className="px-3 py-2">{user.name}</td>
-                    <td className="px-3 py-2">{user.location}</td>
-                    <td className="px-3 py-2">{user.gender}</td>
-                    <td className="px-3 py-2">{user.joined}</td>
-                    <td className="px-3 py-2">
-                      {user.status === 'approved' ? (
-                        <button className="inline-flex items-center justify-center w-24 h-10  rounded font-medium text-black gap-2">
-                          <span className="inline-flex items-center justify-center w-8 h-8 bg-green-700 rounded-sm font-bold text-white">
-                            ✔
-                          </span>
-                          Yes
-                        </button>
+                    <td className="px-4 py-3">{user.id}</td>
+                    <td className="px-4 py-3">{user.name}</td>
+                    <td className="px-4 py-3">{user.location}</td>
+                    <td className="px-4 py-3">{user.gender}</td>
+                    <td className="px-4 py-3">{user.joined}</td>
+
+                    <td className="px-4 py-3">
+                      {user.verified === "Yes" ? (
+                        <span className="text-green-600">✔ Yes</span>
                       ) : (
-                        <span className="text-red-500 w-[75px] justify-center flex  text-lg font-bold">✘ no</span>
+                        <span className="text-red-600">✘ No</span>
                       )}
                     </td>
-                    <td className="px-3 py-2">
+
+                    <td className="px-4 py-3 capitalize">
                       <span className="flex items-center gap-2">
                         <span
-                          className={`w-3 h-3 rounded-full ${user.status === 'approved'
-                              ? 'bg-[]'
-                              : user.status === 'Pending'
-                                ? 'bg-yellow-400'
-                                : 'bg-red-500'
-                            }`}
+                          className={`w-3 h-3 rounded-full ${
+                            user.status === "Approved"
+                              ? "bg-green-500"
+                              : user.status === "Pending"
+                              ? "bg-yellow-400"
+                              : "bg-red-500"
+                          }`}
                         ></span>
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-3 py-2">{user.lastActive}</td>
-                  </tr>
+
+                    <td className="px-4 py-3">{user.lastActive}</td>
+                  </tr> 
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="text-center text-gray-500 py-4 italic"
-                  >
+                  <td colSpan={8} className="text-center py-4 text-gray-500">
                     No users found.
                   </td>
                 </tr>
@@ -234,55 +308,130 @@ export default function UsersPage() {
           </table>
         </div>
 
-        <div className="flex flex-wrap justify-center items-center gap-2 mt-6 text-sm text-gray-600">
+        {/* ---------------- PAGINATION ---------------- */}
+        <div className="flex justify-center items-center gap-2 mt-6 text-gray-700">
+
           <button
-            onClick={() => changePage(currentPage - 1)}
+            onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-3 py-1 rounded ${currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-blue-600 hover:underline'
-              }`}
+            className={`${currentPage === 1 ? "text-gray-400" : "hover:underline"}`}
           >
-            Prev
+            ◄ Prev
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-            if (
-              page === 1 ||
-              page === totalPages ||
-              (page >= currentPage - 1 && page <= currentPage + 1)
-            ) {
-              return (
+          <span>|</span>
+
+          {Array.from({ length: end - start + 1 }, (_, i) => start + i).map(
+            (page, idx, arr) => (
+              <div key={page} className="flex items-center gap-2">
                 <button
-                  key={page}
-                  onClick={() => changePage(page)}
-                  className={`px-3 py-1 rounded ${currentPage === page
-                      ? 'bg-blue-600 text-white font-semibold'
-                      : 'hover:text-blue-600'
-                    }`}
+                  onClick={() => setCurrentPage(page)}
+                  className={`${
+                    page === currentPage
+                      ? "font-bold underline"
+                      : "hover:underline"
+                  }`}
                 >
                   {page}
                 </button>
-              );
-            } else if (
-              (page === currentPage - 2 && page !== 2) ||
-              (page === currentPage + 2 && page !== totalPages - 1)
-            ) {
-              return <span key={page}>...</span>;
-            }
-            return null;
-          })}
+
+                {idx !== arr.length - 1 && <span>|</span>}
+              </div>
+            )
+          )}
+
+          {end < totalPages && <span>.....</span>}
+          <span>|</span>
 
           <button
-            onClick={() => changePage(currentPage + 1)}
+            onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded ${currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-blue-600 hover:underline'
-              }`}
+            className={`${
+              currentPage === totalPages ? "text-gray-400" : "hover:underline"
+            }`}
           >
-            Next
+            Next ►
           </button>
+        </div>
+      </div>
+
+      {/* ---------------- BANNER SECTION ---------------- */}
+      <div className="bg-white rounded-2xl shadow-md border border-gray-500 p-6 mt-10">
+
+        <h2 className="text-2xl font-bold mb-6 text-gray-900">Current Images</h2>
+
+        <div className="flex gap-6 flex-wrap">
+
+          {banners.map((banner) => (
+            <div
+              key={banner._id}
+              className="rounded-xl overflow-hidden shadow-md border border-gray-300 w-[300px] relative"
+            >
+              <Image
+                src={banner.image}
+                width={320}
+                height={180}
+                alt="banner"
+                className="w-full h-[180px] object-cover"
+              />
+
+              <div className="absolute bottom-0 left-0 w-full bg-white/60 backdrop-blur-md px-3 py-3 flex justify-between items-center">
+
+                {/* EDIT BUTTON — EXACT RED OUTLINE */}
+                <button
+                  onClick={() => handleUpdateBanner(banner._id)}
+                  className="flex items-center gap-2 px-6 py-2 border-2 border-red-500 text-red-500 rounded-xl text-base font-semibold"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="red"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                  Edit
+                </button>
+
+                {/* DELETE BUTTON — EXACT RED OUTLINE */}
+                <button
+                  onClick={() => handleDeleteBanner(banner._id)}
+                  className="flex items-center gap-2 px-6 py-2 border-2 border-red-500 text-red-500 rounded-xl text-base font-semibold"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="red"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                  </svg>
+                  Delete
+                </button>
+
+              </div>
+            </div>
+          ))}
+
+          {/* ADD MORE EXACT UI */}
+          <label className="w-[150px] h-[150px] flex flex-col justify-center items-center border-4 border-[#b43f4a] text-[#b43f4a] rounded-2xl cursor-pointer text-xl font-bold">
+            +
+            <span className="text-sm font-semibold mt-1">Add More</span>
+            <input type="file" className="hidden" onChange={handleAddBanner} />
+          </label>
+
         </div>
       </div>
     </div>

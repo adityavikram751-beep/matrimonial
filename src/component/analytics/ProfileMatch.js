@@ -1,123 +1,236 @@
-'use client';
+// src/component/analytics/ProfileMatch.jsx
+"use client";
 
-import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  Line,
-  CartesianGrid,
-} from 'recharts';
+import dynamic from "next/dynamic";
+import Highcharts from "highcharts";
+import React, { useEffect, useState } from "react";
+import { API_URL } from "../api/apiURL";
 
-import { useEffect, useState } from 'react';
-import { API_URL } from '../api/apiURL';
+const HighchartsReact = dynamic(() => import("highcharts-react-official"), {
+  ssr: false,
+});
 
-const profileColors = ['#22c55e', '#facc15', '#ef4444', '#fb923c'];
+export default function ProfileMatch() {
+  const months = [
+    "Jan","Feb","Mar","Apr","May","Jun",
+    "Jul","Aug","Sep","Oct","Nov","Dec"
+  ];
 
-export default function ProfileMatches() {
-  const [profileData, setProfileData] = useState([]);
-  const [matchesData, setMatchesData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pieData, setPieData] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(new Array(12).fill(0));
+  const [matches, setMatches] = useState(new Array(12).fill(0));
 
+  /* ------------------ PIE DATA ------------------ */
   useEffect(() => {
-    const fetchStats = async () => {
+    (async () => {
       try {
-        const res1 = await fetch(`${API_URL}/admin/overview`);
-        const res2 = await fetch(`${API_URL}/admin/matches-per-month`);
+        const res = await fetch(API_URL + "/admin/overview");
+        const api = await res.json();
+        if (!api.success) return;
 
-        const overview = await res1.json();
-        const matches = await res2.json();
+        const order = ["Completed", "Low", "Incomplete", "Moderate"];
+        const colors = {
+          Completed: "#0c7c1b",
+          Low: "#f6931d",
+          Incomplete: "#e21d1d",
+          Moderate: "#f6c927",
+        };
 
-        if (overview.success) setProfileData(overview.data);
-        if (matches.success) setMatchesData(matches.data);
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-        setLoading(false);
+        setPieData(
+          order.map((label) => {
+            const found = api.data.find((x) => x.name === label);
+            return { name: label, y: found ? found.value : 0, color: colors[label] };
+          })
+        );
+      } catch (err) {
+        console.error(err);
       }
-    };
-
-    fetchStats();
+    })();
   }, []);
 
+  /* ------------------ MATCH DATA ------------------ */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(API_URL + "/admin/matches-per-month");
+        const api = await res.json();
+        if (!api.success) return;
+
+        setTotalUsers(months.map((m) => api.data.find((x) => x.month === m)?.totalUsers || 0));
+        setMatches(months.map((m) => api.data.find((x) => x.month === m)?.matches || 0));
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, []);
+
+  /* ------------------ PIE CHART ------------------ */
+  const pieOptions = {
+    chart: { type: "pie", backgroundColor: "transparent", height: 340 },
+    title: { text: "" },
+    legend: { enabled: false },
+    plotOptions: {
+      pie: {
+        borderWidth: 7,
+        borderColor: "#fff",
+        shadow: { color: "rgba(0,0,0,0.28)", offsetY: 12, width: 22 },
+        dataLabels: { enabled: false },
+        startAngle: -30,
+      },
+    },
+    series: [{ type: "pie", data: pieData }],
+    credits: { enabled: false },
+  };
+
+  /* ------------------ MATCH CHART ------------------ */
+  const matchOptions = {
+    chart: { backgroundColor: "transparent", height: 420 },
+    legend: { enabled: false },
+    title: { text: "" },
+    xAxis: {
+      categories: months,
+      labels: { style: { fontSize: 14, fontWeight: 600, color: "#444" } },
+    },
+    yAxis: {
+      min: 0,
+      max: 35,
+      tickInterval: 5,
+      labels: {
+        formatter() { return this.value + " M"; },
+        style: { fontWeight: 600, color: "#666" }
+      },
+      title: { text: "" },
+    },
+    series: [
+      {
+        type: "column",
+        name: "Total no. of Users",
+        borderRadius: 22,
+        color: {
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [
+            [0, "#fadb4d"],
+            [1, "#d2a103"],
+          ],
+        },
+        data: totalUsers,
+      },
+      {
+        type: "line",
+        name: "No. Of Matches",
+        color: "#e22c2c",
+        marker: {
+          enabled: true,
+          fillColor: "#fff",
+          radius: 6,
+          lineWidth: 2.5,
+          lineColor: "#e22c2c",
+        },
+        lineWidth: 4,
+        data: matches,
+      },
+    ],
+    credits: { enabled: false },
+  };
+
+  /* -------- EXACT SAME LEGEND BOX STYLE (SCREENSHOT PERFECT) -------- */
+  const legendBox = (color) => ({
+    width: 18,
+    height: 18,
+    background: "#fff",
+    border: `3px solid ${color}`,
+    borderRadius: 6,          // ← EXACT same as screenshot
+    boxSizing: "border-box",
+    display: "inline-block",
+  });
+
   return (
-    <div className="flex flex-col lg:flex-row flex-wrap gap-6 p-4 sm:p-6 max-w-7xl mx-auto">
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 w-full lg:w-[40%]">
-        <h3 className="text-lg font-semibold mb-4">Profile Overview</h3>
+    <div className="w-full p-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
-        <div className="w-full h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={profileData}
-                cx="50%"
-                cy="50%"
-                innerRadius={30}
-                outerRadius={70}
-                paddingAngle={5}
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {profileData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={profileColors[index % profileColors.length]}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        {/* ----------- LEFT PIE BOX ----------- */}
+        <div className="bg-white shadow-xl rounded-2xl p-6 relative"
+          style={{ border: "2px solid rgba(0,0,0,0.08)" }}>
 
-        <div className="flex flex-wrap gap-4 text-sm mt-4">
-          {profileData.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: profileColors[idx] }}
-              ></div>
-              <span className="text-gray-600">{item.name}</span>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: "#222" }}>
+            Profile Overview
+          </h2>
+
+          {/* RIGHT-SIDE LEGEND EXACT SAME AS SCREENSHOT */}
+          <div style={{
+            position: "absolute",
+            top: 28,
+            right: 28,
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            fontSize: 16,
+            fontWeight: 600,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={legendBox("#0c7c1b")} />
+              Completed
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 w-full lg:w-[55%]">
-        <h3 className="text-lg font-semibold mb-4">Matches Per Month</h3>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={legendBox("#f6931d")} />
+              Low
+            </div>
 
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={matchesData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis domain={[0, 40]} unit="M" />
-              <Tooltip />
-              <Legend />
-              <Bar
-                dataKey="totalUsers"
-                fill="#facc15"
-                name="Total no. of Users"
-                radius={[4, 4, 0, 0]}
-              />
-              <Line
-                type="monotone"
-                dataKey="matches"
-                stroke="#ef4444"
-                strokeWidth={2.5}
-                dot={{ r: 5 }}
-                activeDot={{ r: 7 }}
-                name="No. Of Matches"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={legendBox("#e21d1d")} />
+              Incomplete
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={legendBox("#f6c927")} />
+              Moderate
+            </div>
+          </div>
+
+          <div style={{ marginTop: 40 }}>
+            <HighchartsReact highcharts={Highcharts} options={pieOptions} />
+          </div>
         </div>
+
+        {/* ----------- RIGHT MATCHES BOX ----------- */}
+        <div className="bg-white shadow-xl rounded-2xl p-6"
+          style={{ border: "2px solid rgba(0,0,0,0.08)" }}>
+
+          {/* HEADER + LEGEND INLINE EXACT SAME */}
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#222" }}>
+              Matches Per Month
+            </h2>
+
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 15,
+              fontSize: 16,
+              fontWeight: 600
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={legendBox("#d2a103")} />
+                Total no. of Users
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={legendBox("#e22c2c")} />
+                No. Of Matches
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 30 }}>
+            <HighchartsReact highcharts={Highcharts} options={matchOptions} />
+          </div>
+        </div>
+
       </div>
     </div>
   );

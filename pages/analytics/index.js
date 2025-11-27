@@ -9,9 +9,11 @@ const index = () => {
  
 <>
     {/* <Search/> */}
+    <Search/>
     <TopSection/> 
     <ProfileMatches/>
     <ReportsThisWeek/>
+    
 </>
     
   )

@@ -2,5 +2,9 @@
   "/": "pages/index.js",
   "/_app": "pages/_app.js",
   "/_document": "pages/_document.js",
-  "/dashboard": "pages/dashboard.js"
+  "/adminprofile": "pages/adminprofile.js",
+  "/analytics": "pages/analytics.js",
+  "/dashboard": "pages/dashboard.js",
+  "/logout": "pages/logout.js",
+  "/profileDetails": "pages/profileDetails.js"
 }

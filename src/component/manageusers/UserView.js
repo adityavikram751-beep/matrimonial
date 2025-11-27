@@ -1,11 +1,12 @@
+'use client';
 import React from 'react';
-import { API_URL } from '../api/apiURL';
 import Image from 'next/image';
 
 const UserDetailCard = ({ user }) => {
   const formatDate = (date) => {
     if (!date) return 'N/A';
     const d = new Date(date);
+    if (isNaN(d)) return 'N/A';
     return d.toLocaleDateString('en-IN', {
       day: '2-digit',
       month: 'long',
@@ -13,85 +14,68 @@ const UserDetailCard = ({ user }) => {
     });
   };
 
-  const handleApproval = async (id, status) => {
-    try {
-      const res = await fetch(`${API_URL}/admin/user-manage/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ adminApprovel: status }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        alert(`User has been ${status}.`);
-        window.location.reload();
-
-      } else {
-        console.error(`Failed to ${status} user:`, data.message);
-        alert(`Failed to ${status}: ${data.message}`);
-      }
-    } catch (error) {
-      console.error(`${status} error:`, error);
-      alert(`${status} error: ${error.message}`);
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-gray-100">
-      {/* Top Header */}
-      <div className="flex items-center space-x-6 bg-white p-6 rounded-lg shadow-md mb-6">
+    <div className="max-w-6xl mx-auto p-6 bg-gray-100">
+
+      {/* TOP PROFILE */}
+      <div className="flex items-center space-x-6 mb-10">
         <div className="flex flex-col items-center relative">
           <img
             src={user.profileImage || '/default-avatar.png'}
-            alt={user.fullName}
-            className="w-24 h-24 rounded-full object-cover border"
+            alt="Profile"
+            className="w-28 h-28 rounded-full object-cover border"
           />
+
           <span
-            className={`px-3 py-1 rounded-full text-sm font-medium
-    ${user.adminApprovel === 'approved' ? 'bg-red-700 text-white' :
-                user.adminApprovel === 'reject' ? 'bg-red-700  text-white font-bold' :
-                  'bg-red-600 text-white'}
-  `}
+            className={`mt-2 px-4 py-1 rounded-full text-sm font-semibold capitalize 
+              ${user.adminApprovel === 'approved'
+                ? 'bg-green-600 text-white'
+                : user.adminApprovel === 'reject'
+                ? 'bg-red-700 text-white'
+                : 'bg-green-600 text-white'
+              }`}
           >
             {user.adminApprovel}
           </span>
         </div>
 
         <div className="flex-1">
-          <h2 className="text-2xl font-bold">
-            {`${user.firstName || ''} ${user.lastName || ''}`.trim()}
+          <h2 className="text-3xl font-bold">
+            {user.firstName} {user.lastName}
           </h2>
-          <p className="text-gray-500">
+
+          <p className="text-gray-500 text-lg font-medium">
             #{user._id?.slice(-6)} / {user.gender}
           </p>
-          <p className="text-gray-600 flex gap-2">
-            <Image src="/location.png" width={17} height={25} alt="Location" /> {user.city}
+
+          <p className="flex items-center gap-2 text-gray-600 text-lg mt-1 font-medium">
+            <Image src="/location.png" width={18} height={20} alt="Location" />
+            {user.city}
           </p>
         </div>
       </div>
 
-      <TableSection
+      {/* PERSONAL INFORMATION */}
+      <SectionBox
         title="Personal Information"
+        twoColumn
         data={[
-          ['Full Name', user.fullName],
-          ['DOB', formatDate(user.dateOfBirth)],
-          ['Gender', user.gender],
-          ['Marital Status', user.maritalStatus],
-          ['Religion', user.religion],
+          ['Full Name', `${user.firstName} ${user.lastName}`],
           ['Education', user.highestEducation],
-          ['Profession', user.occupation],
+          ['DOB', formatDate(user.dateOfBirth)],
+          ['Profession', user.designation || user.employedIn],
+          ['Gender', user.gender],
           ['Income Range', user.annualIncome],
+          ['Marital Status', user.maritalStatus],
           ['Height', user.height],
+          ['Religion', user.religion],
           ['Mother Tongue', user.motherTongue],
         ]}
-        twoColumn
       />
 
-      <div className="grid md:grid-cols-2 gap-6 mt-6">
-        <TableSection
+      {/* FAMILY + CAREER */}
+      <div className="grid md:grid-cols-2 gap-8 mt-8">
+        <SectionBox
           title="Family Background"
           data={[
             ['Father Occ', user.fatherOccupation],
@@ -101,107 +85,109 @@ const UserDetailCard = ({ user }) => {
             ['Family Type', user.familyType],
           ]}
         />
-        <TableSection
+
+        <SectionBox
           title="Career, Education"
           data={[
             ['Post Grad', user.postGraduation],
             ['Under Grad', user.underGraduation],
             ['Employee In', user.employedIn],
-            ['Profession', user.occupation],
+            ['Profession', user.designation || user.employedIn],
             ['Company', user.company],
           ]}
         />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 mt-6">
-        <TableSection
+      {/* LIFESTYLE & HOBBIES */}
+      <div className="mt-8">
+        <SectionBox
           title="Lifestyle & Hobbies"
+          twoColumn
           data={[
             ['Dietary Habit', user.diet],
+            ['Hobbies', user.hobbies?.join(', ') || 'N/A'],
+
             ['Drinking Habit', user.drinking],
+            ['Sports', user.sports?.join(', ') || 'N/A'],
+
             [
               'Assets',
-              `${user.ownCar ? 'own a car' : ''}${user.ownCar && user.ownHouse ? ', ' : ''
-              }${user.ownHouse ? 'house' : ''}` || 'N/A',
+              `${user.ownCar ? 'own a car' : ''}${user.ownCar && user.ownHouse ? ', ' : ''}${user.ownHouse ? 'house' : ''}` ||
+                'N/A'
             ],
-            ['Fav Vacation', user.vacationDestination?.join(', ') || 'N/A'],
-            ['Fav Movie', user.movies?.join(', ') || 'N/A'],
-          ]}
-        />
-        <TableSection
-          title=""
-          data={[
-            ['Hobbies', user.hobbies?.join(', ') || 'N/A'],
-            ['Sports', user.sports?.join(', ') || 'N/A'],
             ['Interest', user.interests?.join(', ') || 'N/A'],
+
+            ['Fav Vacation', user.vacationDestination?.join(', ') || 'N/A'],
             ['Fav Cuisine', user.cuisine?.join(', ') || 'N/A'],
+
+            ['Fav Movie', user.movies?.join(', ') || 'N/A'],
             ['Fav Color', user.favoriteColor || 'N/A'],
           ]}
         />
-      </div>
-
-      <div className="mt-8 flex justify-end space-x-4">
-        <button
-          onClick={() => handleApproval(user._id, 'reject')}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-          disabled={user.adminApprovel === 'reject'}
-        >
-          Reject
-        </button>
-        <button
-          onClick={() => handleApproval(user._id, 'approved')}
-          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-          disabled={user.adminApprovel === 'approved'}
-        >
-          Approve
-        </button>
       </div>
     </div>
   );
 };
 
-const TableSection = ({ title, data, twoColumn = false }) => (
-  <div className="bg-white rounded-lg shadow-md p-4">
-    {title && (
-      <h3 className="text-xl font-semibold text-gray-700 mb-4">{title}</h3>
-    )}
-    <table className="w-full text-sm text-gray-700 border-collapse">
-      <thead>
-        <tr className="text-left bg-gray-100">
-          <th className="p-2 font-medium">Data</th>
-          <th className="p-2 font-medium">Info</th>
-          {twoColumn && (
-            <>
-              <th className="p-2 font-medium">Data</th>
-              <th className="p-2 font-medium">Info</th>
-            </>
-          )}
-        </tr>
-      </thead>
-      <tbody>
-        {twoColumn
-          ? data
-            .reduce((rows, val, idx, arr) => {
-              if (idx % 2 === 0) rows.push([val, arr[idx + 1]]);
-              return rows;
-            }, [])
-            .map((pair, idx) => (
-              <tr key={idx} className="border-t">
-                <td className="p-2">{pair[0]?.[0]}</td>
-                <td className="p-2">{pair[0]?.[1] || 'N/A'}</td>
-                <td className="p-2">{pair[1]?.[0] || ''}</td>
-                <td className="p-2">{pair[1]?.[1] || 'N/A'}</td>
-              </tr>
-            ))
-          : data.map(([label, value], idx) => (
-            <tr key={idx} className="border-t">
-              <td className="p-2">{label}</td>
-              <td className="p-2">{value || 'N/A'}</td>
-            </tr>
-          ))}
-      </tbody>
-    </table>
-  </div>
-);
+/* ================= SECTION BOX (EXACT SCREENSHOT) ================= */
+const SectionBox = ({ title, data, twoColumn = false }) => {
+  const rows = twoColumn
+    ? data.reduce((acc, cur, i) => {
+        if (i % 2 === 0) acc.push([cur, data[i + 1]]);
+        return acc;
+      }, [])
+    : data;
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-400">
+      {title && (
+        <h3 className="text-xl font-semibold mb-4 text-gray-900">{title}</h3>
+      )}
+
+      <table className="w-full text-gray-700 text-[15px] border-collapse">
+        <thead>
+          <tr className="bg-gray-100 text-left border-b border-gray-400">
+            <th className="p-3 font-medium border-r border-gray-300">Data</th>
+            <th className="p-3 font-medium border-r border-gray-300">Info</th>
+
+            {twoColumn && (
+              <>
+                <th className="p-3 font-medium border-r border-gray-300">
+                  Data
+                </th>
+                <th className="p-3 font-medium">Info</th>
+              </>
+            )}
+          </tr>
+        </thead>
+
+        <tbody>
+          {twoColumn
+            ? rows.map((pair, i) => (
+                <tr key={i} className="border-t border-gray-300">
+                  <td className="p-3 border-r border-gray-300">
+                    {pair[0]?.[0]}
+                  </td>
+                  <td className="p-3 border-r border-gray-300">
+                    {pair[0]?.[1] || 'N/A'}
+                  </td>
+
+                  <td className="p-3 border-r border-gray-300">
+                    {pair[1]?.[0] || ''}
+                  </td>
+                  <td className="p-3">{pair[1]?.[1] || 'N/A'}</td>
+                </tr>
+              ))
+            : rows.map(([label, value], i) => (
+                <tr key={i} className="border-t border-gray-300">
+                  <td className="p-3 border-r border-gray-300">{label}</td>
+                  <td className="p-3">{value || 'N/A'}</td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 export default UserDetailCard;
