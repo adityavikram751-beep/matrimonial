@@ -2,13 +2,12 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
-import Image from "next/image";
 
 const Search = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);   // ⭐ FIX
+  const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
 
   const dropdownRef = useRef(null);
@@ -43,8 +42,6 @@ const Search = ({ onSearch }) => {
       if (data.success) {
         const list = data.data.reverse();
         setNotifications(list);
-
-        // ⭐ FIX — unreadCount update
         setUnreadCount(list.filter((n) => !n.read).length);
       }
     } catch (error) {
@@ -62,13 +59,11 @@ const Search = ({ onSearch }) => {
     setOpen(newOpen);
 
     if (newOpen) {
-      // 1️⃣ Immediately remove red dot
+      // Remove red dot
       setUnreadCount(0);
 
-      // 2️⃣ Mark all as read in UI
-      setNotifications(prev =>
-        prev.map((n) => ({ ...n, read: true }))
-      );
+      // Mark all as read (frontend)
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     }
   };
 
@@ -82,18 +77,17 @@ const Search = ({ onSearch }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setNotifications(prev =>
-        prev.map((n) => n._id === id ? { ...n, read: true } : n)
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
 
-      // Update unread
-      setUnreadCount(prev => prev - 1);
+      setUnreadCount((prev) => prev - 1);
     } catch (e) {
       console.log(e);
     }
   };
 
-  // MARK ALL
+  // MARK ALL READ
   const markAll = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -103,9 +97,7 @@ const Search = ({ onSearch }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setNotifications(prev => prev.map((n) => ({ ...n, read: true })));
-
-      // ⭐ unread = 0
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (e) {
       console.log(e);
@@ -122,10 +114,7 @@ const Search = ({ onSearch }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setNotifications(prev => prev.filter((n) => n._id !== id));
-
-      // update unread
-      setUnreadCount(prev => prev - 1);
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
     } catch (e) {
       console.log(e);
     }
@@ -182,14 +171,19 @@ const Search = ({ onSearch }) => {
 
           {/* NOTIFICATION ICON */}
           <div className="relative" ref={dropdownRef}>
-            <Image
-              src="/notification.png"
-              width={30}
-              height={30}
-              alt="Notification"
+
+            {/* PURE SVG BELL (NO IMAGE) */}
+            <svg
+              onClick={handleBellClick}
+              xmlns="http://www.w3.org/2000/svg"
+              width="30"
+              height="30"
+              fill="#FFC107"
+              viewBox="0 0 24 24"
               className="cursor-pointer"
-              onClick={handleBellClick}   // ⭐ FIX
-            />
+            >
+              <path d="M12 24c1.104 0 2-.897 2-2h-4c0 1.103.896 2 2 2zm6.707-5l1.293 1.293V21H4v-1.707L5.293 19H6v-7c0-3.309 2.691-6 6-6s6 2.691 6 6v7h.707zM18 18H6v-7c0-2.757 2.243-5 5-5s5 2.243 5 5v7z"/>
+            </svg>
 
             {/* RED DOT */}
             {unreadCount > 0 && (
@@ -260,6 +254,7 @@ const Search = ({ onSearch }) => {
                 )}
               </div>
             )}
+
           </div>
         </div>
       </div>
