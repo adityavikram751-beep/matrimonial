@@ -1,15 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { HiMenu, HiX } from 'react-icons/hi';
 import { LogOut } from 'lucide-react';
-
 import { useRouter } from 'next/router';
-
-
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -18,29 +15,67 @@ const navItems = [
   { label: 'Reported Content', href: '/reportedcontent' },
   { label: 'Verification Request', href: '/verificationrequest' },
   { label: 'Manage Sub Admin', href: '/managesubadmin' },
-  { label: 'Profile Details', href: '/profileDetails' },
-
+  { label: 'Profile Details', href: '/adminprofile' },
 ];
 
 const Sidebar = () => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const toggleSidebar = () => setIsOpen(!isOpen);
   const router = useRouter();
+
+  // 🔥 Sidebar Profile State
+  const [profile, setProfile] = useState({
+    name: 'Super Admin',
+    profileImage: '/profile.png',
+    role: 'Super Admin',
+  });
+
+  // 🔥 Load sidebar profile from localStorage
+  const loadProfile = () => {
+    try {
+      const raw = localStorage.getItem('admin_profile');
+      if (raw) {
+        const data = JSON.parse(raw);
+        setProfile({
+          name: data?.name || 'Super Admin',
+          profileImage: data?.profileImage || '/profile.png',
+          role: data?.role || 'Super Admin',
+        });
+      }
+    } catch (err) {}
+  };
+
+  useEffect(() => {
+    // initial load
+    loadProfile();
+
+    // listen for custom event from profile page
+    const updateListener = () => loadProfile();
+    window.addEventListener('adminProfileUpdated', updateListener);
+
+    // listen if profile updates in another tab
+    const storageListener = (e) => {
+      if (e.key === 'admin_profile') loadProfile();
+    };
+    window.addEventListener('storage', storageListener);
+
+    return () => {
+      window.removeEventListener('adminProfileUpdated', updateListener);
+      window.removeEventListener('storage', storageListener);
+    };
+  }, []);
 
   return (
     <>
-
+      {/* mobile menu */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <button
-          onClick={toggleSidebar}
+          onClick={() => setIsOpen(!isOpen)}
           className="p-2 bg-white rounded shadow border border-gray-300"
         >
           {isOpen ? <HiX className="w-6 h-6" /> : <HiMenu className="w-6 h-6" />}
         </button>
-
       </div>
-
 
       <div
         className={`fixed top-0 left-0 h-full w-[250px] bg-gray-100 border-r border-gray-300 p-4 z-40 transition-transform duration-300 transform
@@ -50,31 +85,29 @@ const Sidebar = () => {
 
         <h1 className="text-3xl font-bold mb-6 hidden md:block">LOGO</h1>
 
-
+        {/* 🔥 AUTO-UPDATING PROFILE BOX */}
         <Link href="/adminprofile" className="block">
           <div className="bg-white rounded-md shadow p-2 mb-6 gap-2 flex items-center space-x-3 border border-gray-300 hover:bg-gray-100 cursor-pointer">
+
             <div className="flex justify-center items-center">
-              <div className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-red-100 relative overflow-hidden">
-                <Image
-                  src="/profile.png"
+              <div className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-red-100 overflow-hidden">
+                <img
+                  src={profile.profileImage}
                   alt="Profile"
-                  width={200}
-                  height={300}
                   className="rounded-full w-full h-full object-cover"
                 />
               </div>
             </div>
 
-
             <div>
-              <p className="font-semibold text-sm">Parul Gurg</p>
-              <p className="text-xs text-gray-500">Super Admin</p>
+              <p className="font-semibold text-sm">{profile.name}</p>
+              <p className="text-xs text-gray-500">{profile.role}</p>
             </div>
+
           </div>
         </Link>
 
-{/*  */}
-
+        {/* MENU ITEMS */}
         <nav className="flex flex-col space-y-3">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
@@ -88,12 +121,7 @@ const Sidebar = () => {
                     } rounded-[10px]`}
                   onClick={() => setIsOpen(false)}
                 >
-                  <span
-                    className={`mr-2 text-lg font-bold ${isActive ? 'text-white' : 'text-transparent'
-                      }`}
-                  >
-                    |
-                  </span>
+                  <span className={`mr-2 text-lg font-bold ${isActive ? 'text-white' : 'text-transparent'}`}>|</span>
                   {item.label}
                 </div>
               </Link>
@@ -101,8 +129,7 @@ const Sidebar = () => {
           })}
         </nav>
 
-
-
+        {/* LOGOUT */}
         <button
           onClick={() => router.push('/logout')}
           className="absolute bottom-6 left-4 flex items-center space-x-2 text-gray-800 hover:text-red-700 transition-colors"
@@ -111,10 +138,7 @@ const Sidebar = () => {
           <span className="text-sm font-medium">Log out</span>
         </button>
 
-
-
       </div>
-
 
       {isOpen && (
         <div

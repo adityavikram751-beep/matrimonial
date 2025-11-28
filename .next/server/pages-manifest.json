@@ -1,5 +1,19 @@
 {
   "/_app": "pages/_app.js",
+  "/adminprofile": "pages/adminprofile.html",
+  "/": "pages/index.html",
   "/_document": "pages/_document.js",
-  "/adminprofile": "pages/adminprofile.js"
+  "/_error": "pages/_error.js",
+  "/analytics": "pages/analytics.html",
+  "/dashboard": "pages/dashboard.html",
+  "/login": "pages/login.html",
+  "/managesubadmin": "pages/managesubadmin.html",
+  "/logout": "pages/logout.html",
+  "/CraeteSubAdmin": "pages/CraeteSubAdmin.html",
+  "/profileDetails": "pages/profileDetails.html",
+  "/manageusers/[id]": "pages/manageusers/[id].html",
+  "/verificationrequest": "pages/verificationrequest.html",
+  "/reportedcontent": "pages/reportedcontent.html",
+  "/manageusers": "pages/manageusers.html",
+  "/404": "pages/404.html"
 }

@@ -13,7 +13,7 @@ const Search = () => {
 
   return (
     // TODO responsive header
-    <div className="w-full bg-red-800 px-4 py-1 sm:px-6 lg:px-8">
+    // < className="w-full bg-red-800 px-4 py-1 sm:px-6 lg:px-8">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b-2 border-gray-200 pb-3">
         {/* Title */}
         <h1 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
@@ -36,13 +36,13 @@ const Search = () => {
           </div> */}
 
           {/* Bell Notification */}
-          <div className="relative">
+          {/* <div className="relative">
             <Bell className="h-6 w-6 text-yellow-500" />
             <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white" />
-          </div>
+          </div> */}
         </div>
       </div>
-    </div>
+    
   );
 };
 
