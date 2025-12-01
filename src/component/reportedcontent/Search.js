@@ -1,5 +1,10 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
+
+// ⭐ WebSocket system import
+import { connectSocket, disconnectSocket, getSocket } from "@/src/lib/socket";
 
 const Search = () => {
   const [notifications, setNotifications] = useState([]);
@@ -8,22 +13,40 @@ const Search = () => {
 
   const BASE_URL = "https://matrimonial-backend-7ahc.onrender.com";
 
-  // -------------------------------
-  // CLICK OUTSIDE TO CLOSE
-  // -------------------------------
-  useEffect(() => {
-    const handleOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
+  // ------------------------------------------------------
+  // 1) LOAD ADMIN PREF → Connect or Disconnect WebSocket
+  // ------------------------------------------------------
+  const loadAdminPrefs = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${BASE_URL}/admin/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const json = await res.json();
+
+      if (json.success) {
+        const admin = json.data;
+
+        if (admin.notifications === true) {
+          connectSocket(admin._id);
+        } else {
+          disconnectSocket();
+        }
       }
-    };
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+    } catch (err) {
+      console.log("Admin Pref Error:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadAdminPrefs();
   }, []);
 
-  // -------------------------------
-  // FETCH NOTIFICATIONS (FAST)
-  // -------------------------------
+  // ------------------------------------------------------
+  // 2) FETCH NOTIFICATIONS (API)
+  // ------------------------------------------------------
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -35,7 +58,6 @@ const Search = () => {
       const data = await res.json();
 
       if (data.success) {
-        // NO DELAY — SET DIRECTLY
         setNotifications(data.data.reverse());
       }
     } catch (error) {
@@ -47,111 +69,115 @@ const Search = () => {
     fetchNotifications();
   }, []);
 
-  // -------------------------------
-  // MARK SINGLE READ (FAST)
-  // -------------------------------
+  // ------------------------------------------------------
+  // 3) REAL-TIME NOTIFICATIONS (WebSocket)
+  // ------------------------------------------------------
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    console.log("🟢 Real-time listener active...");
+
+    socket.on("new-notification", (data) => {
+      console.log("🔔 New Real-Time Notification:", data);
+
+      setNotifications((prev) => [data, ...prev]);
+    });
+
+    return () => {
+      const socket = getSocket();
+      if (socket) socket.off("new-notification");
+    };
+  }, []);
+
+  // ------------------------------------------------------
+  // CLICK OUTSIDE TO CLOSE DROPDOWN
+  // ------------------------------------------------------
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  // ------------------------------------------------------
+  // MARK SINGLE READ
+  // ------------------------------------------------------
   const markAsRead = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // INSTANT UI UPDATE (NO EXTRA FETCH)
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === id ? { ...n, read: true } : n
-        )
-      );
-    } catch (e) {
-      console.log("Mark Read Error:", e);
-    }
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+    );
   };
 
-  // -------------------------------
-  // MARK ALL READ (SUPER FAST)
-  // -------------------------------
+  // ------------------------------------------------------
+  // MARK ALL READ
+  // ------------------------------------------------------
   const markAll = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      await fetch(`${BASE_URL}/api/notification/mark-all`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    await fetch(`${BASE_URL}/api/notification/mark-all`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // INSTANT UPDATE
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, read: true }))
-      );
-    } catch (e) {
-      console.log("Mark All Error:", e);
-    }
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  // -------------------------------
-  // DELETE ONE (FAST)
-  // -------------------------------
+  // ------------------------------------------------------
+  // DELETE ONE
+  // ------------------------------------------------------
   const deleteOne = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      await fetch(`${BASE_URL}/api/notification/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    await fetch(`${BASE_URL}/api/notification/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // FAST REMOVE FROM UI
-      setNotifications((prev) => prev.filter((n) => n._id !== id));
-    } catch (e) {
-      console.log("Delete Error:", e);
-    }
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
   };
 
-  // -------------------------------
-  // DELETE ALL (SUPER FAST)
-  // -------------------------------
+  // ------------------------------------------------------
+  // DELETE ALL
+  // ------------------------------------------------------
   const deleteAll = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      // PARALLEL DELETE — ULTRA FAST
-      await Promise.all(
-        notifications.map((n) =>
-          fetch(`${BASE_URL}/api/notification/${n._id}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        )
-      );
+    await Promise.all(
+      notifications.map((n) =>
+        fetch(`${BASE_URL}/api/notification/${n._id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      )
+    );
 
-      setNotifications([]);
-    } catch (e) {
-      console.log("Delete All Error:", e);
-    }
+    setNotifications([]);
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="w-full bg-[#f5f5f5] py-3 px-4 border-b flex items-center justify-between">
-
       {/* TITLE */}
-      <h1 className="text-2xl font-bold text-black whitespace-nowrap">
-        Reported Content
-      </h1>
+      <h1 className="text-2xl font-bold text-black">Reported Content</h1>
 
       {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
 
-        {/* NOTIFICATION */}
+        {/* NOTIFICATION ICON */}
         <div className="relative" ref={dropdownRef}>
-          <div
-            className="cursor-pointer relative"
-            onClick={() => setOpen(!open)}
-          >
+          <div className="cursor-pointer relative" onClick={() => setOpen(!open)}>
             <Bell className="h-7 w-7 text-yellow-500" />
 
             {unreadCount > 0 && (
@@ -164,24 +190,16 @@ const Search = () => {
           {/* DROPDOWN */}
           {open && (
             <div className="absolute right-0 mt-3 w-[330px] bg-white shadow-lg border rounded-lg p-3 z-50">
-
-              {/* HEADING */}
               <div className="flex justify-between items-center mb-2">
                 <h2 className="font-semibold text-gray-800">Notifications</h2>
-                <button
-                  onClick={markAll}
-                  className="text-blue-600 text-sm"
-                >
+                <button onClick={markAll} className="text-blue-600 text-sm">
                   Mark all read
                 </button>
               </div>
 
-              {/* LIST */}
               <div className="max-h-[300px] overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="text-center text-gray-500 py-3">
-                    No notifications
-                  </p>
+                  <p className="text-center text-gray-500 py-3">No notifications</p>
                 ) : (
                   notifications.map((n) => (
                     <div
@@ -218,11 +236,10 @@ const Search = () => {
                 )}
               </div>
 
-              {/* DELETE ALL */}
               {notifications.length > 0 && (
                 <button
-                  className="w-full text-red-600 mt-2 py-2 text-sm border-t"
                   onClick={deleteAll}
+                  className="w-full text-red-600 mt-2 py-2 text-sm border-t"
                 >
                   Delete All
                 </button>

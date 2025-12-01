@@ -1,9 +1,37 @@
 import { io } from "socket.io-client";
 
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-  transports: ["websocket"],
-  reconnection: true,
-  reconnectionAttempts: 10,
-});
+let socket = null;
 
-export default socket;
+export function connectSocket(adminId) {
+  if (socket && socket.connected) return socket;
+
+  socket = io("https://matrimonial-backend-7ahc.onrender.com", {
+    transports: ["websocket"],
+    secure: true,
+    reconnection: true,
+    reconnectionAttempts: 10,
+    path: "/socket.io",
+    query: { adminId },
+  });
+
+  socket.on("connect", () => {
+    console.log("🔵 SOCKET CONNECTED:", socket.id);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 SOCKET DISCONNECTED");
+  });
+
+  return socket;
+}
+
+export function disconnectSocket() {
+  if (socket) {
+    socket.disconnect();
+    console.log("🔴 SOCKET MANUALLY DISCONNECTED");
+  }
+}
+
+export function getSocket() {
+  return socket;
+}

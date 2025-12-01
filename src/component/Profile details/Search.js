@@ -1,7 +1,10 @@
-'use client';
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
+
+// ⭐ SOCKET IMPORT
+import { connectSocket, disconnectSocket, getSocket } from "@/src/lib/socket";
 
 const Search = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,24 +14,43 @@ const Search = ({ onSearch }) => {
   const [open, setOpen] = useState(false);
 
   const dropdownRef = useRef(null);
+
   const BASE_URL = "https://matrimonial-backend-7ahc.onrender.com";
 
-  // SEARCH HANDLER
-  const handleSearch = () => onSearch(searchQuery.toLowerCase());
-  const handleKeyDown = (e) => e.key === "Enter" && handleSearch();
+  /* --------------------------------------------
+     1) ADMIN PREF → CONNECT OR DISCONNECT SOCKET
+  -------------------------------------------- */
+  const loadAdminPrefs = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-  // CLICK OUTSIDE → CLOSE DROPDOWN
-  useEffect(() => {
-    const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
+      const res = await fetch(`${BASE_URL}/admin/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const json = await res.json();
+
+      if (json.success) {
+        const admin = json.data;
+
+        if (admin.notifications === true) {
+          connectSocket(admin._id);
+        } else {
+          disconnectSocket();
+        }
       }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    } catch (err) {
+      console.log("Admin Pref error:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadAdminPrefs();
   }, []);
 
-  // FETCH NOTIFICATIONS (API)
+  /* --------------------------------------------
+     2) FETCH NOTIFICATIONS (API)
+  -------------------------------------------- */
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -45,7 +67,7 @@ const Search = ({ onSearch }) => {
         setUnreadCount(list.filter((n) => !n.read).length);
       }
     } catch (error) {
-      console.log("Fetch error:", error);
+      console.log("Fetch Notification Error:", error);
     }
   };
 
@@ -53,92 +75,128 @@ const Search = ({ onSearch }) => {
     fetchNotifications();
   }, []);
 
-  // AUTO READ ALL ON OPEN
+  /* --------------------------------------------
+     3) REAL-TIME NOTIFICATION SOCKET LISTENER
+  -------------------------------------------- */
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    console.log("🟢 Profile Topbar — Real-time listener active");
+
+    socket.on("new-notification", (data) => {
+      console.log("🔔 REAL-TIME NOTIFICATION:", data);
+
+      setNotifications((prev) => [data, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    return () => {
+      const socket = getSocket();
+      if (socket) socket.off("new-notification");
+    };
+  }, []);
+
+  /* --------------------------------------------
+     SEARCH HANDLER
+  -------------------------------------------- */
+  const handleSearch = () => onSearch(searchQuery.toLowerCase());
+  const handleKeyDown = (e) => e.key === "Enter" && handleSearch();
+
+  /* --------------------------------------------
+     CLICK OUTSIDE → CLOSE DROPDOWN
+  -------------------------------------------- */
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  /* --------------------------------------------
+     AUTO READ ON BELL CLICK
+  -------------------------------------------- */
   const handleBellClick = () => {
     const newOpen = !open;
     setOpen(newOpen);
 
     if (newOpen) {
-      // Remove red dot
       setUnreadCount(0);
 
-      // Mark all as read (frontend)
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    }
-  };
-
-  // MARK ONE READ
-  const markAsRead = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      // frontend mark-read
       setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+        prev.map((n) => ({ ...n, read: true }))
       );
-
-      setUnreadCount((prev) => prev - 1);
-    } catch (e) {
-      console.log(e);
     }
   };
 
-  // MARK ALL READ
+  /* --------------------------------------------
+     MARK ONE READ
+  -------------------------------------------- */
+  const markAsRead = async (id) => {
+    const token = localStorage.getItem("token");
+
+    await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+    );
+
+    setUnreadCount((prev) => prev - 1);
+  };
+
+  /* --------------------------------------------
+     MARK ALL READ
+  -------------------------------------------- */
   const markAll = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      await fetch(`${BASE_URL}/api/notification/mark-all`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    await fetch(`${BASE_URL}/api/notification/mark-all`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      setUnreadCount(0);
-    } catch (e) {
-      console.log(e);
-    }
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
   };
 
-  // DELETE ONE
+  /* --------------------------------------------
+     DELETE ONE
+  -------------------------------------------- */
   const deleteOne = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      await fetch(`${BASE_URL}/api/notification/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    await fetch(`${BASE_URL}/api/notification/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      setNotifications((prev) => prev.filter((n) => n._id !== id));
-    } catch (e) {
-      console.log(e);
-    }
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
   };
 
-  // DELETE ALL
+  /* --------------------------------------------
+     DELETE ALL
+  -------------------------------------------- */
   const deleteAll = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      await Promise.all(
-        notifications.map((n) =>
-          fetch(`${BASE_URL}/api/notification/${n._id}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          })
-        )
-      );
+    await Promise.all(
+      notifications.map((n) =>
+        fetch(`${BASE_URL}/api/notification/${n._id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      )
+    );
 
-      setNotifications([]);
-      setUnreadCount(0);
-    } catch (e) {
-      console.log(e);
-    }
+    setNotifications([]);
+    setUnreadCount(0);
   };
 
   return (
@@ -171,8 +229,6 @@ const Search = ({ onSearch }) => {
 
           {/* NOTIFICATION ICON */}
           <div className="relative" ref={dropdownRef}>
-
-            {/* PURE SVG BELL (NO IMAGE) */}
             <svg
               onClick={handleBellClick}
               xmlns="http://www.w3.org/2000/svg"
@@ -185,7 +241,6 @@ const Search = ({ onSearch }) => {
               <path d="M12 24c1.104 0 2-.897 2-2h-4c0 1.103.896 2 2 2zm6.707-5l1.293 1.293V21H4v-1.707L5.293 19H6v-7c0-3.309 2.691-6 6-6s6 2.691 6 6v7h.707zM18 18H6v-7c0-2.757 2.243-5 5-5s5 2.243 5 5v7z"/>
             </svg>
 
-            {/* RED DOT */}
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-600 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">
                 {unreadCount}
