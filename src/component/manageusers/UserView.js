@@ -1,8 +1,12 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 
+const BASE_URL = "https://matrimonial-backend-7ahc.onrender.com";
+
 const UserDetailCard = ({ user }) => {
+  const [currentUser, setCurrentUser] = useState(user);
+
   const formatDate = (date) => {
     if (!date) return 'N/A';
     const d = new Date(date);
@@ -14,6 +18,39 @@ const UserDetailCard = ({ user }) => {
     });
   };
 
+  /* ------------------------------
+        APPROVE / REJECT API
+  ------------------------------- */
+  const updateStatus = async (status) => {
+    try {
+      const token = localStorage.getItem('token');
+
+      const res = await fetch(
+        `${BASE_URL}/admin/user-verify/${currentUser._id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ adminApprovel: status }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Status updated successfully!");
+        setCurrentUser(data.user); // Update UI immediately
+      } else {
+        alert(data.message || "Something went wrong.");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("API error");
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6 bg-gray-100">
 
@@ -21,36 +58,36 @@ const UserDetailCard = ({ user }) => {
       <div className="flex items-center space-x-6 mb-10">
         <div className="flex flex-col items-center relative">
           <img
-            src={user.profileImage || '/default-avatar.png'}
+            src={currentUser.profileImage || '/default-avatar.png'}
             alt="Profile"
             className="w-28 h-28 rounded-full object-cover border"
           />
 
           <span
             className={`mt-2 px-4 py-1 rounded-full text-sm font-semibold capitalize 
-              ${user.adminApprovel === 'approved'
+              ${currentUser.adminApprovel === 'approved'
                 ? 'bg-green-600 text-white'
-                : user.adminApprovel === 'reject'
+                : currentUser.adminApprovel === 'reject'
                 ? 'bg-red-700 text-white'
-                : 'bg-green-600 text-white'
+                : 'bg-yellow-600 text-white'
               }`}
           >
-            {user.adminApprovel}
+            {currentUser.adminApprovel}
           </span>
         </div>
 
         <div className="flex-1">
           <h2 className="text-3xl font-bold">
-            {user.firstName} {user.lastName}
+            {currentUser.firstName} {currentUser.lastName}
           </h2>
 
           <p className="text-gray-500 text-lg font-medium">
-            #{user._id?.slice(-6)} / {user.gender}
+            #{currentUser._id?.slice(-6)} / {currentUser.gender}
           </p>
 
           <p className="flex items-center gap-2 text-gray-600 text-lg mt-1 font-medium">
             <Image src="/location.png" width={18} height={20} alt="Location" />
-            {user.city}
+            {currentUser.city}
           </p>
         </div>
       </div>
@@ -60,16 +97,16 @@ const UserDetailCard = ({ user }) => {
         title="Personal Information"
         twoColumn
         data={[
-          ['Full Name', `${user.firstName} ${user.lastName}`],
-          ['Education', user.highestEducation],
-          ['DOB', formatDate(user.dateOfBirth)],
-          ['Profession', user.designation || user.employedIn],
-          ['Gender', user.gender],
-          ['Income Range', user.annualIncome],
-          ['Marital Status', user.maritalStatus],
-          ['Height', user.height],
-          ['Religion', user.religion],
-          ['Mother Tongue', user.motherTongue],
+          ['Full Name', `${currentUser.firstName} ${currentUser.lastName}`],
+          ['Education', currentUser.highestEducation],
+          ['DOB', formatDate(currentUser.dateOfBirth)],
+          ['Profession', currentUser.designation || currentUser.employedIn],
+          ['Gender', currentUser.gender],
+          ['Income Range', currentUser.annualIncome],
+          ['Marital Status', currentUser.maritalStatus],
+          ['Height', currentUser.height],
+          ['Religion', currentUser.religion],
+          ['Mother Tongue', currentUser.motherTongue],
         ]}
       />
 
@@ -78,22 +115,22 @@ const UserDetailCard = ({ user }) => {
         <SectionBox
           title="Family Background"
           data={[
-            ['Father Occ', user.fatherOccupation],
-            ['Mother Occ', user.motherOccupation],
-            ['Family Inc', user.familyIncome],
-            ['Brother', user.brother || '0'],
-            ['Family Type', user.familyType],
+            ['Father Occ', currentUser.fatherOccupation],
+            ['Mother Occ', currentUser.motherOccupation],
+            ['Family Inc', currentUser.familyIncome],
+            ['Brother', currentUser.brother || '0'],
+            ['Family Type', currentUser.familyType],
           ]}
         />
 
         <SectionBox
           title="Career, Education"
           data={[
-            ['Post Grad', user.postGraduation],
-            ['Under Grad', user.underGraduation],
-            ['Employee In', user.employedIn],
-            ['Profession', user.designation || user.employedIn],
-            ['Company', user.company],
+            ['Post Grad', currentUser.postGraduation],
+            ['Under Grad', currentUser.underGraduation],
+            ['Employee In', currentUser.employedIn],
+            ['Profession', currentUser.designation || currentUser.employedIn],
+            ['Company', currentUser.company],
           ]}
         />
       </div>
@@ -104,32 +141,47 @@ const UserDetailCard = ({ user }) => {
           title="Lifestyle & Hobbies"
           twoColumn
           data={[
-            ['Dietary Habit', user.diet],
-            ['Hobbies', user.hobbies?.join(', ') || 'N/A'],
-
-            ['Drinking Habit', user.drinking],
-            ['Sports', user.sports?.join(', ') || 'N/A'],
-
+            ['Dietary Habit', currentUser.diet],
+            ['Hobbies', currentUser.hobbies?.join(', ') || 'N/A'],
+            ['Drinking Habit', currentUser.drinking],
+            ['Sports', currentUser.sports?.join(', ') || 'N/A'],
             [
               'Assets',
-              `${user.ownCar ? 'own a car' : ''}${user.ownCar && user.ownHouse ? ', ' : ''}${user.ownHouse ? 'house' : ''}` ||
-                'N/A'
+              `${currentUser.ownCar ? 'own a car' : ''}${
+                currentUser.ownCar && currentUser.ownHouse ? ', ' : ''
+              }${currentUser.ownHouse ? 'house' : ''}` || 'N/A'
             ],
-            ['Interest', user.interests?.join(', ') || 'N/A'],
-
-            ['Fav Vacation', user.vacationDestination?.join(', ') || 'N/A'],
-            ['Fav Cuisine', user.cuisine?.join(', ') || 'N/A'],
-
-            ['Fav Movie', user.movies?.join(', ') || 'N/A'],
-            ['Fav Color', user.favoriteColor || 'N/A'],
+            ['Interest', currentUser.interests?.join(', ') || 'N/A'],
+            ['Fav Vacation', currentUser.vacationDestination?.join(', ') || 'N/A'],
+            ['Fav Cuisine', currentUser.cuisine?.join(', ') || 'N/A'],
+            ['Fav Movie', currentUser.movies?.join(', ') || 'N/A'],
+            ['Fav Color', currentUser.favoriteColor || 'N/A'],
           ]}
         />
       </div>
+
+      {/* APPROVE / REJECT BUTTONS */}
+      <div className="mt-12 flex justify-center gap-6">
+        <button
+          onClick={() => updateStatus("approved")}
+          className="px-6 py-2 bg-green-600 text-white text-lg rounded-md shadow hover:bg-green-700"
+        >
+          Approve
+        </button>
+
+        <button
+          onClick={() => updateStatus("reject")}
+          className="px-6 py-2 bg-red-600 text-white text-lg rounded-md shadow hover:bg-red-700"
+        >
+          Reject
+        </button>
+      </div>
+
     </div>
   );
 };
 
-/* ================= SECTION BOX (EXACT SCREENSHOT) ================= */
+/* ================= SECTION BOX ================= */
 const SectionBox = ({ title, data, twoColumn = false }) => {
   const rows = twoColumn
     ? data.reduce((acc, cur, i) => {
@@ -152,9 +204,7 @@ const SectionBox = ({ title, data, twoColumn = false }) => {
 
             {twoColumn && (
               <>
-                <th className="p-3 font-medium border-r border-gray-300">
-                  Data
-                </th>
+                <th className="p-3 font-medium border-r border-gray-300">Data</th>
                 <th className="p-3 font-medium">Info</th>
               </>
             )}

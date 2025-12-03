@@ -16,6 +16,7 @@ const Index = () => {
   const [index, setIndex] = useState(0);
 
   const [notifications, setNotifications] = useState([]);
+  const [unread, setUnread] = useState(0);   // ⭐ NEW
   const [open, setOpen] = useState(false);
 
   const dropdownRef = useRef(null);
@@ -85,7 +86,9 @@ const Index = () => {
       const data = await res.json();
 
       if (data.success) {
-        setNotifications(data.data.reverse());
+        const list = data.data.reverse();
+        setNotifications(list);
+        setUnread(list.filter((n) => !n.read).length);   // ⭐ NEW
       }
     } catch (err) {
       console.log("Notification fetch error:", err);
@@ -100,23 +103,50 @@ const Index = () => {
   useEffect(() => {
     if (!adminPref) return;
 
-    if (adminPref.notifications === true) {
-      const socket = getSocket();
+    const socket = getSocket();
+    if (!socket) return;
 
-      if (socket) {
-        socket.on("new-notification", (data) => {
-          setNotifications((prev) => [data, ...prev]);
-        });
-      }
-    }
+    // NEW notification
+    socket.on("new-notification", (data) => {
+      setNotifications((prev) => [data, ...prev]);
+      setUnread((u) => u + 1);   // ⭐ NEW
+    });
+
+    // mark-one from other tab
+    socket.on("one-read", ({ id }) => {
+      setNotifications((prev) =>
+        prev.map((n) => n._id === id ? { ...n, read: true } : n)
+      );
+      setUnread((u) => Math.max(0, u - 1));   // ⭐ NEW
+    });
+
+    // mark-all from other tab
+    socket.on("all-read", () => {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnread(0);   // ⭐ NEW
+    });
+
+    // delete-one sync
+    socket.on("delete-one", ({ id }) => {
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    });
+
+    // delete-all sync
+    socket.on("delete-all", () => {
+      setNotifications([]);
+      setUnread(0);   // ⭐ NEW
+    });
 
     return () => {
-      const socket = getSocket();
-      if (socket) socket.off("new-notification");
+      socket.off("new-notification");
+      socket.off("one-read");
+      socket.off("all-read");
+      socket.off("delete-one");
+      socket.off("delete-all");
     };
   }, [adminPref]);
 
-  /* SEND NOTIFICATION (POST API) */
+  /* SEND NOTIFICATION */
   const sendNotification = async (title, message) => {
     try {
       const token = localStorage.getItem("token");
@@ -137,6 +167,7 @@ const Index = () => {
 
       if (data.success) {
         setNotifications((prev) => [data.data, ...prev]);
+        setUnread((u) => u + 1);   // ⭐ NEW
         return true;
       }
     } catch (err) {
@@ -150,6 +181,7 @@ const Index = () => {
   const markRead = async (id) => {
     try {
       const token = localStorage.getItem("token");
+
       await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` }
@@ -158,6 +190,11 @@ const Index = () => {
       setNotifications((prev) =>
         prev.map((n) => n._id === id ? { ...n, read: true } : n)
       );
+
+      setUnread((u) => Math.max(0, u - 1));   // ⭐ NEW
+
+      getSocket()?.emit("one-read", { id });
+
     } catch (e) {
       console.log(e);
     }
@@ -167,12 +204,17 @@ const Index = () => {
   const markAll = async () => {
     try {
       const token = localStorage.getItem("token");
+
       await fetch(`${BASE_URL}/api/notification/mark-all`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` }
       });
 
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnread(0);   // ⭐ NEW
+
+      getSocket()?.emit("all-read");
+
     } catch (e) {
       console.log(e);
     }
@@ -189,6 +231,9 @@ const Index = () => {
       });
 
       setNotifications((prev) => prev.filter((n) => n._id !== id));
+
+      getSocket()?.emit("delete-one", { id });
+
     } catch (e) {
       console.log(e);
     }
@@ -209,6 +254,10 @@ const Index = () => {
       );
 
       setNotifications([]);
+      setUnread(0);   // ⭐ NEW
+
+      getSocket()?.emit("delete-all");
+
     } catch (e) {
       console.log(e);
     }
@@ -221,10 +270,13 @@ const Index = () => {
 
     if (newOpen) {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnread(0);   // ⭐ NEW
+
+      getSocket()?.emit("all-read");
     }
   };
 
-  const showRedDot = notifications.some((n) => !n.read);
+  const showRedDot = unread > 0;   // ⭐ FIXED
 
   return (
     <div className="flex w-full">
@@ -311,7 +363,7 @@ const Index = () => {
         <AnalyticsChart />
         <UserTable />
 
-        {/*  SEND TEST NOTIFICATION BUTTON (optional) */}
+        {/* SEND TEST NOTIFICATION */}
         <button
           onClick={() =>
             sendNotification("Test Notification", "This is a live notification.")

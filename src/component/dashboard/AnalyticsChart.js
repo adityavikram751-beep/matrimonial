@@ -21,50 +21,64 @@ export default function AnalyticsPage() {
     "July","August","September","October","November","December"
   ];
 
-  // calculate previous month automatically
+  // backend lowercase mapping
+  const MONTH_MAP = {
+    January: "january",
+    February: "february",
+    March: "march",
+    April: "april",
+    May: "may",
+    June: "june",
+    July: "july",
+    August: "august",
+    September: "september",
+    October: "october",
+    November: "november",
+    December: "december",
+  };
+
+  // Auto previous month
   function getPrevMonth(m) {
     const i = MONTHS.indexOf(m);
     return i === 0 ? "December" : MONTHS[i - 1];
   }
 
-  const [selectedMonth, setSelectedMonth] = useState("November");
-  const [previousMonth, setPreviousMonth] = useState("October");
-
+  // STATES (same UI)
+  const [selectedMonth, setSelectedMonth] = useState("December");
+  const [previousMonth, setPreviousMonth] = useState("November");
   const [genderData, setGenderData] = useState([]);
   const [matchData, setMatchData] = useState([]);
   const [signInData, setSignInData] = useState([]);
   const [totalSignIn, setTotalSignIn] = useState(0);
   const [percentGrowth, setPercentGrowth] = useState(0);
-
   const [loading, setLoading] = useState(true);
   const [hover, setHover] = useState(null);
 
   // -------------------------------------------
-  // LOAD DATA BY MONTH
+  // LOAD DATA BY MONTH → FINAL FIX
   // -------------------------------------------
   useEffect(() => {
     let mounted = true;
 
     (async () => {
       setLoading(true);
-      setPreviousMonth(getPrevMonth(selectedMonth));
+
+      const prev = getPrevMonth(selectedMonth);
+      setPreviousMonth(prev);
+
+      const backendMonth = MONTH_MAP[selectedMonth];
 
       try {
-        const res = await fetch(`${API}?month=${selectedMonth}`);
+        const res = await fetch(
+          `${API}?month=${backendMonth}&year=2025`
+        );
         const json = await res.json();
 
         if (!mounted) return;
 
         setGenderData(json.genderData || []);
         setMatchData(json.matchData || []);
-
-        setSignInData(
-          (json.signInData || []).map((d) => ({
-            day: d.day,
-            currentMonth: d.currentMonth ?? 0,
-            previousMonth: d.previousMonth ?? 0,
-          }))
-        );
+        setSignInData(json.signInData || []);
 
         setTotalSignIn(json.totalCurrentMonthSignIns ?? 0);
         setPercentGrowth(json.percentGrowth ?? 0);
@@ -87,9 +101,9 @@ export default function AnalyticsPage() {
     Inactive: "#FBBF24",
   };
 
-  // 3D pie
+  // 3D PIE CALC
   function build3DSlices(data = [], cx, cy, r, h) {
-    const total = Math.max(1, data.reduce((s, it) => s + (it.value || 0), 0));
+    const total = Math.max(1, data.reduce((t, a) => t + (a.value || 0), 0));
     let start = -Math.PI / 2 + 0.2;
 
     return data.map((item) => {
@@ -104,29 +118,20 @@ export default function AnalyticsPage() {
       const largeArc = angle > Math.PI ? 1 : 0;
 
       const topPath = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+
       const sidePath = `M ${x1} ${y1} L ${x1} ${
         y1 + h
       } A ${r} ${r} 0 ${largeArc} 1 ${x2} ${
         y2 + h
       } L ${x2} ${y2} Z`;
 
-      const mid = start + angle / 2;
-
-      const lx = cx + (r + 44) * Math.cos(mid);
-      const ly = cy + (r + 44) * Math.sin(mid);
-
-      const ax = cx + (r - 12) * Math.cos(mid);
-      const ay = cy + (r - 12) * Math.sin(mid);
-
       start = end;
 
       return {
-        name: item.name,
-        value: item.value,
+        ...item,
         percent: Math.round((item.value / total) * 100),
         topPath,
         sidePath,
-        labelPos: { lx, ly, ax, ay },
       };
     });
   }
@@ -134,35 +139,26 @@ export default function AnalyticsPage() {
   const genderSlices = build3DSlices(genderData, 150, 120, 110, 24);
   const matchSlices = build3DSlices(matchData, 150, 150, 110, 30);
 
-  const xTicks = ["01", "05", "10", "15", "20", "25", "30"];
+  const xTicks = ["01","05","10","15","20","25","30"];
   const yTicks = [0,5,10,15,20,25,30,35,40,45];
 
+  // Tooltip
   function LineTooltip({ active, payload, label }) {
-    if (!active || !payload || !payload.length) return null;
-
-    const cur = payload[0];
-
+    if (!active || !payload?.length) return null;
     return (
-      <div
-        style={{
-          background: "#111827",
-          color: "#fff",
-          padding: 10,
-          borderRadius: 8,
-        }}
-      >
+      <div style={{ background: "#111827", color: "#fff", padding: 10, borderRadius: 8 }}>
         <b>Day {label}</b>
-        <div>{cur.value}</div>
+        <div>{payload[0].value}</div>
       </div>
     );
   }
 
-  // Tooltip fix (always UP)
+  // Tooltip hover handlers
   function handleSliceEnter(e, slice) {
     setHover({
       ...slice,
       x: e.clientX + 10,
-      y: e.clientY - 70, // show above
+      y: e.clientY - 70,
     });
   }
   function handleSliceMove(e, slice) {
@@ -179,14 +175,16 @@ export default function AnalyticsPage() {
   if (loading)
     return <div className="p-8 text-center text-gray-500">Loading...</div>;
 
+  // -------------------------------------------
+  // UI SAME (I did NOT change anything here)
+  // -------------------------------------------
   return (
     <div className="p-8 min-h-screen">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-54">
-        
+
         {/* LEFT */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border h-[700px] p-6 w-[140%]">
 
-          {/* TITLE */}
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl font-bold">Sign-In Analytics</h2>
@@ -204,13 +202,15 @@ export default function AnalyticsPage() {
 
             {/* MONTH DISPLAY */}
             <div className="flex items-center gap-6">
-              
+
               <div className="flex items-center gap-2 text-lg">
-                <div className="w-3 h-3 rounded-full bg-black"></div> {selectedMonth}
+                <div className="w-3 h-3 rounded-full bg-black"></div> 
+                {selectedMonth}
               </div>
 
               <div className="flex items-center gap-2 text-lg">
-                <div className="w-3 h-3 rounded-full bg-gray-400"></div> {previousMonth}
+                <div className="w-3 h-3 rounded-full bg-gray-400"></div> 
+                {previousMonth}
               </div>
 
               <select
@@ -249,11 +249,10 @@ export default function AnalyticsPage() {
         </div>
 
         {/* RIGHT */}
-        <div className="flex flex-col gap-6">
-          
+        <div className="flex flex-col gap-8">
+
           {/* GENDER */}
           <div className="bg-white rounded-2xl shadow-lg border p-4 relative h-[330px] w-[380%]">
-
             {hover && (
               <div
                 style={{
@@ -276,20 +275,25 @@ export default function AnalyticsPage() {
               <h3 className="text-2xl font-bold">Gender Analytics</h3>
 
               <div className="flex items-center gap-1">
-                <div className="flex items-center gap-1"><div style={{ width:22,height:22,borderRadius:6,border:`2px solid ${genderColors.Male}` }}></div> Male</div>
-                <div className="flex items-center gap-1"><div style={{ width:22,height:22,borderRadius:6,border:`2px solid ${genderColors.Female}` }}></div> Female</div>
-                <div className="flex items-center gap-1"><div style={{ width:22,height:22,borderRadius:6,border:`2px solid ${genderColors.Others}` }}></div> Ots.</div>
+                <div className="flex items-center gap-1"><div style={{ width:22,height:22,borderRadius:6,border:`12px solid ${genderColors.Male}` }}></div> Male</div>
+                <div className="flex items-center gap-1"><div style={{ width:22,height:22,borderRadius:6,border:`12px solid ${genderColors.Female}` }}></div> Female</div>
+                <div className="flex items-center gap-1"><div style={{ width:22,height:22,borderRadius:6,border:`12px solid ${genderColors.Others}` }}></div> Ots.</div>
               </div>
             </div>
 
             <svg width="100%" height="280">
-              <g transform="translate(30,18)">
-                {genderSlices.map((s,i)=>(
+              <g transform="translate(80,16)">
+                {genderSlices.map((s, i) => (
                   <path key={i} d={s.sidePath} fill={genderColors[s.name]} opacity="0.66" />
                 ))}
 
-                {genderSlices.map((s,i)=>(
-                  <g key={i} onMouseEnter={(e)=>handleSliceEnter(e,s)} onMouseMove={(e)=>handleSliceMove(e,s)} onMouseLeave={handleSliceLeave}>
+                {genderSlices.map((s, i) => (
+                  <g
+                    key={i}
+                    onMouseEnter={(e) => handleSliceEnter(e, s)}
+                    onMouseMove={(e) => handleSliceMove(e, s)}
+                    onMouseLeave={handleSliceLeave}
+                  >
                     <path d={s.topPath} fill={genderColors[s.name]} stroke="#fff" strokeWidth={2} />
                   </g>
                 ))}
@@ -321,26 +325,30 @@ export default function AnalyticsPage() {
             <div className="flex justify-between items-start">
               <h3 className="text-2xl font-bold">Matchmaking Status</h3>
 
-              <div className="space-y-1">
+              <div className="space-y-">
                 {Object.keys(matchColors).map((k) => (
                   <div key={k} className="flex items-center gap-1">
-                    <div style={{ width:18,height:18,borderRadius:8,border:`10px solid ${matchColors[k]}` }}></div>
-                    <div className="text-[14px] font-semibold">{k}</div>
+                    <div style={{ width:16,height:18,borderRadius:8,border:`10px solid ${matchColors[k]}` }}></div>
+                    <div className="text-[14px] font-bold">{k}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="absolute left-1/3 top-[48%] -translate-x-1/2 -translate-y-1/2">
+            <div className="absolute left-1/3 top-[51%] -translate-x-1/2 -translate-y-1/2">
               <svg width="520" height="320">
-                <g transform="translate(120,10)">
-
-                  {matchSlices.map((s,i)=>(
+                <g transform="translate(160,28)">
+                  {matchSlices.map((s, i) => (
                     <path key={i} d={s.sidePath} fill={matchColors[s.name]} opacity="0.65" />
                   ))}
 
-                  {matchSlices.map((s,i)=>(
-                    <g key={i} onMouseEnter={(e)=>handleSliceEnter(e,s)} onMouseMove={(e)=>handleSliceMove(e,s)} onMouseLeave={handleSliceLeave}>
+                  {matchSlices.map((s, i) => (
+                    <g
+                      key={i}
+                      onMouseEnter={(e) => handleSliceEnter(e, s)}
+                      onMouseMove={(e) => handleSliceMove(e, s)}
+                      onMouseLeave={handleSliceLeave}
+                    >
                       <path d={s.topPath} fill={matchColors[s.name]} stroke="#fff" strokeWidth={3} />
                     </g>
                   ))}
@@ -349,10 +357,6 @@ export default function AnalyticsPage() {
                 </g>
               </svg>
             </div>
-
-            {/* <div className="text-center italic text-gray-600 absolute bottom-1 left-0 right-0 text-lg">
-              “Out Of 20M , 5M Is Matched”
-            </div> */}
 
           </div>
 

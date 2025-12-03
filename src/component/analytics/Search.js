@@ -7,36 +7,34 @@ import { connectSocket, disconnectSocket, getSocket } from "@/src/lib/socket";
 
 const Search = () => {
   const [notifications, setNotifications] = useState([]);
-  const [unread, setUnread] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
 
   const dropdownRef = useRef(null);
   const BASE_URL = "https://matrimonial-backend-7ahc.onrender.com";
 
-  /* -----------------------------------------
+  /* --------------------------------------------------------
         1) LOAD ADMIN PREF → CONNECT SOCKET
-  ----------------------------------------- */
+  -------------------------------------------------------- */
   const loadAdminPrefs = async () => {
     try {
       const token = localStorage.getItem("token");
-
       const res = await fetch(`${BASE_URL}/admin/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await res.json();
+      const json = await res.json();
+      if (!json.success) return;
 
-      if (data.success) {
-        const admin = data.data;
+      const admin = json.data;
 
-        if (admin.notifications === true) {
-          connectSocket(admin._id);
-        } else {
-          disconnectSocket();
-        }
+      if (admin.notifications === true) {
+        connectSocket(admin._id);
+      } else {
+        disconnectSocket();
       }
-    } catch (error) {
-      console.log("Admin Pref Error:", error);
+    } catch (err) {
+      console.log("Admin Pref Error:", err);
     }
   };
 
@@ -44,23 +42,9 @@ const Search = () => {
     loadAdminPrefs();
   }, []);
 
-  /* -----------------------------------------
-      CLICK OUTSIDE TO CLOSE DROPDOWN
-  ----------------------------------------- */
-  useEffect(() => {
-    const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  /* -----------------------------------------
-      FETCH NOTIFICATIONS (API)
-  ----------------------------------------- */
+  /* --------------------------------------------------------
+        2) FETCH NOTIFICATIONS
+  -------------------------------------------------------- */
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -73,12 +57,11 @@ const Search = () => {
 
       if (data.success) {
         const list = data.data.reverse();
-
         setNotifications(list);
-        setUnread(list.filter((n) => !n.read).length);
+        setUnreadCount(list.filter((n) => !n.read).length);
       }
     } catch (err) {
-      console.log("Fetch notification error:", err);
+      console.log("Fetch Notification Error:", err);
     }
   };
 
@@ -86,110 +69,156 @@ const Search = () => {
     fetchNotifications();
   }, []);
 
-  /* -----------------------------------------
-      SOCKET REAL-TIME LISTENER
-  ----------------------------------------- */
+  /* --------------------------------------------------------
+        3) SOCKET REAL-TIME LISTENERS
+  -------------------------------------------------------- */
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
 
-    console.log("🔌 Socket listener attached");
+    console.log("🟢 Socket Active For Analytics Page");
 
+    // NEW NOTIFICATION
     socket.on("new-notification", (data) => {
-      console.log("🔔 LIVE NOTIFICATION RECEIVED:", data);
-
       setNotifications((prev) => [data, ...prev]);
-      setUnread((u) => u + 1);
+      setUnreadCount((u) => u + 1);
+    });
+
+    // ONE READ SYNC
+    socket.on("one-read", ({ id }) => {
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+      );
+      setUnreadCount((u) => Math.max(0, u - 1));
+    });
+
+    // ALL READ SYNC
+    socket.on("all-read", () => {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    });
+
+    // DELETE ONE SYNC
+    socket.on("delete-one", ({ id }) => {
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    });
+
+    // DELETE ALL SYNC
+    socket.on("delete-all", () => {
+      setNotifications([]);
+      setUnreadCount(0);
     });
 
     return () => {
-      const socket = getSocket();
-      if (socket) socket.off("new-notification");
+      socket.off("new-notification");
+      socket.off("one-read");
+      socket.off("all-read");
+      socket.off("delete-one");
+      socket.off("delete-all");
     };
   }, []);
 
-  /* -----------------------------------------
-      MARK READ
-  ----------------------------------------- */
-  const markRead = async (id) => {
+  /* --------------------------------------------------------
+        4) CLICK OUTSIDE TO CLOSE DROPDOWN
+  -------------------------------------------------------- */
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  /* --------------------------------------------------------
+        5) MARK ONE READ
+  -------------------------------------------------------- */
+  const markAsRead = async (id) => {
     const token = localStorage.getItem("token");
 
+    // frontend update
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+    );
+    setUnreadCount((u) => Math.max(0, u - 1));
+
+    // backend update
     await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    setNotifications((prev) =>
-      prev.map((n) => (n._id === id ? { ...n, read: true } : n))
-    );
-
-    setUnread((prev) => prev - 1);
+    // socket sync
+    getSocket()?.emit("one-read", { id });
   };
 
-  /* -----------------------------------------
-      MARK ALL READ
-  ----------------------------------------- */
+  /* --------------------------------------------------------
+        6) MARK ALL READ
+  -------------------------------------------------------- */
   const markAll = async () => {
     const token = localStorage.getItem("token");
 
+    // frontend update
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+
+    // backend update
     await fetch(`${BASE_URL}/api/notification/mark-all`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    setUnread(0);
+    // sync everywhere
+    getSocket()?.emit("all-read");
   };
 
-  /* -----------------------------------------
-      DELETE ONE
-  ----------------------------------------- */
+  /* --------------------------------------------------------
+        7) DELETE ONE
+  -------------------------------------------------------- */
   const deleteOne = async (id) => {
     const token = localStorage.getItem("token");
+
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
 
     await fetch(`${BASE_URL}/api/notification/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    setNotifications((prev) => prev.filter((n) => n._id !== id));
+    getSocket()?.emit("delete-one", { id });
   };
 
-  /* -----------------------------------------
-      DELETE ALL
-  ----------------------------------------- */
+  /* --------------------------------------------------------
+        8) DELETE ALL
+  -------------------------------------------------------- */
   const deleteAll = async () => {
     const token = localStorage.getItem("token");
 
-    await Promise.all(
-      notifications.map((n) =>
-        fetch(`${BASE_URL}/api/notification/${n._id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      )
-    );
-
     setNotifications([]);
-    setUnread(0);
+    setUnreadCount(0);
+
+    await fetch(`${BASE_URL}/api/notification/delete-all`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    getSocket()?.emit("delete-all");
   };
 
-  /* -----------------------------------------
-      BELL CLICK → AUTO READ + RED DOT REMOVE
-  ----------------------------------------- */
+  /* --------------------------------------------------------
+        9) BELL CLICK → AUTO MARK ALL READ
+  -------------------------------------------------------- */
   const handleBellClick = () => {
-    const newState = !open;
-    setOpen(newState);
+    const openNow = !open;
+    setOpen(openNow);
 
-    if (newState) {
-      setUnread(0);
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    }
+    if (openNow) markAll();
   };
 
-  /* -----------------------------------------
-      UI RETURN
-  ----------------------------------------- */
+  /* --------------------------------------------------------
+        UI (100% Same Style)
+  -------------------------------------------------------- */
   return (
     <div
       className="bg-gray-100 px-10 py-4 shadow-sm border-b fixed top-0 z-50 flex items-center justify-between"
@@ -204,8 +233,8 @@ const Search = () => {
               <path d="M12 24c1.104 0 2-.897 2-2h-4c0 1.103.896 2 2 2zm6.707-5l1.293 1.293V21H4v-1.707L5.293 19H6v-7c0-3.309 2.691-6 6-6s6 2.691 6 6v7h.707zM18 18H6v-7c0-2.757 2.243-5 5-5s5 2.243 5 5v7z"/>
             </svg>
 
-            {unread > 0 && (
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-600 rounded-full"></span>
             )}
           </div>
 
@@ -244,6 +273,15 @@ const Search = () => {
                     <p className="text-gray-500 text-[11px] mt-1">
                       {new Date(n.createdAt).toLocaleString()}
                     </p>
+
+                    {!n.read && (
+                      <button
+                        className="text-blue-600 text-xs mt-1"
+                        onClick={() => markAsRead(n._id)}
+                      >
+                        Mark as read
+                      </button>
+                    )}
                   </div>
                 ))
               )}

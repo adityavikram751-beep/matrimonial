@@ -174,7 +174,7 @@ export default function LoginPage() {
 
         <img src="/profile.png" className="w-28 h-28 rounded-full border-4 border-white shadow-lg mb-4" />
 
-        <h2 className="text-white text-2xl font-semibold">Parul Gurg</h2>
+        <h2 className="text-white text-2xl font-semibold">ADITYA</h2>
         <p className="text-gray-200 mb-8">Super Admin</p>
 
         <div className="w-[350px] bg-white/20 backdrop-blur-xl rounded-2xl shadow-xl p-8 border border-white/30">
@@ -322,5 +322,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  );1
 }

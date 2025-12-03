@@ -18,7 +18,7 @@ const Search = ({ onSearch }) => {
   const BASE_URL = "https://matrimonial-backend-7ahc.onrender.com";
 
   /* --------------------------------------------
-     1) ADMIN PREF → CONNECT OR DISCONNECT SOCKET
+      1) ADMIN PREF → CONNECT SOCKET
   -------------------------------------------- */
   const loadAdminPrefs = async () => {
     try {
@@ -49,7 +49,7 @@ const Search = ({ onSearch }) => {
   }, []);
 
   /* --------------------------------------------
-     2) FETCH NOTIFICATIONS (API)
+      2) FETCH ALL NOTIFICATIONS
   -------------------------------------------- */
   const fetchNotifications = async () => {
     try {
@@ -76,35 +76,62 @@ const Search = ({ onSearch }) => {
   }, []);
 
   /* --------------------------------------------
-     3) REAL-TIME NOTIFICATION SOCKET LISTENER
+      3) SOCKET SYNC LISTENERS (VERY IMPORTANT)
   -------------------------------------------- */
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
 
-    console.log("🟢 Profile Topbar — Real-time listener active");
+    console.log("🟢 Realtime Listener Enabled");
 
+    // NEW NOTIFICATION
     socket.on("new-notification", (data) => {
-      console.log("🔔 REAL-TIME NOTIFICATION:", data);
-
       setNotifications((prev) => [data, ...prev]);
-      setUnreadCount((prev) => prev + 1);
+      setUnreadCount((c) => c + 1);
+    });
+
+    // MARK ALL READ SYNC
+    socket.on("all-read", () => {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    });
+
+    // MARK ONE READ SYNC
+    socket.on("one-read", ({ id }) => {
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+      );
+      setUnreadCount((c) => Math.max(c - 1, 0));
+    });
+
+    // DELETE ONE SYNC
+    socket.on("delete-one", ({ id }) => {
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    });
+
+    // DELETE ALL SYNC
+    socket.on("delete-all", () => {
+      setNotifications([]);
+      setUnreadCount(0);
     });
 
     return () => {
-      const socket = getSocket();
-      if (socket) socket.off("new-notification");
+      socket.off("new-notification");
+      socket.off("all-read");
+      socket.off("one-read");
+      socket.off("delete-one");
+      socket.off("delete-all");
     };
   }, []);
 
   /* --------------------------------------------
-     SEARCH HANDLER
+      SEARCH
   -------------------------------------------- */
   const handleSearch = () => onSearch(searchQuery.toLowerCase());
   const handleKeyDown = (e) => e.key === "Enter" && handleSearch();
 
   /* --------------------------------------------
-     CLICK OUTSIDE → CLOSE DROPDOWN
+      CLOSE DROPDOWN OUTSIDE CLICK
   -------------------------------------------- */
   useEffect(() => {
     const handler = (e) => {
@@ -117,103 +144,107 @@ const Search = ({ onSearch }) => {
   }, []);
 
   /* --------------------------------------------
-     AUTO READ ON BELL CLICK
+      MARK ALL READ (BELL CLICK)
   -------------------------------------------- */
-  const handleBellClick = () => {
-    const newOpen = !open;
-    setOpen(newOpen);
+  const handleBellClick = async () => {
+    const show = !open;
+    setOpen(show);
 
-    if (newOpen) {
-      setUnreadCount(0);
-
-      // frontend mark-read
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, read: true }))
-      );
+    if (show) {
+      markAll(); // Auto mark all
     }
   };
 
   /* --------------------------------------------
-     MARK ONE READ
-  -------------------------------------------- */
-  const markAsRead = async (id) => {
-    const token = localStorage.getItem("token");
-
-    await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    setNotifications((prev) =>
-      prev.map((n) => (n._id === id ? { ...n, read: true } : n))
-    );
-
-    setUnreadCount((prev) => prev - 1);
-  };
-
-  /* --------------------------------------------
-     MARK ALL READ
+      MARK ALL READ (WITH SOCKET EMIT)
   -------------------------------------------- */
   const markAll = async () => {
     const token = localStorage.getItem("token");
 
+    // Frontend update
+    setNotifications((p) => p.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+
+    // Backend update
     await fetch(`${BASE_URL}/api/notification/mark-all`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    setUnreadCount(0);
+    // Socket sync for everywhere
+    getSocket()?.emit("all-read");
   };
 
   /* --------------------------------------------
-     DELETE ONE
+      MARK ONE READ
+  -------------------------------------------- */
+  const markAsRead = async (id) => {
+    const token = localStorage.getItem("token");
+
+    // front update
+    setNotifications((p) =>
+      p.map((n) => (n._id === id ? { ...n, read: true } : n))
+    );
+    setUnreadCount((c) => Math.max(0, c - 1));
+
+    // backend update
+    await fetch(`${BASE_URL}/api/notification/mark-read/${id}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // socket sync
+    getSocket()?.emit("one-read", { id });
+  };
+
+  /* --------------------------------------------
+      DELETE ONE
   -------------------------------------------- */
   const deleteOne = async (id) => {
     const token = localStorage.getItem("token");
+
+    setNotifications((p) => p.filter((n) => n._id !== id));
 
     await fetch(`${BASE_URL}/api/notification/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    setNotifications((prev) => prev.filter((n) => n._id !== id));
+    getSocket()?.emit("delete-one", { id });
   };
 
   /* --------------------------------------------
-     DELETE ALL
+      DELETE ALL
   -------------------------------------------- */
   const deleteAll = async () => {
     const token = localStorage.getItem("token");
 
-    await Promise.all(
-      notifications.map((n) =>
-        fetch(`${BASE_URL}/api/notification/${n._id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      )
-    );
-
     setNotifications([]);
     setUnreadCount(0);
+
+    await fetch(`${BASE_URL}/api/notification/delete-all`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    getSocket()?.emit("delete-all");
   };
 
+  /* --------------------------------------------
+      UI
+  -------------------------------------------- */
   return (
-    <div className="border-slate-700 w-full bg-[rgba(242,242,242,1)] p-2">
-      <div className="flex justify-between items-center fixed top-0 right-[14px] border-b-2 w-[1272px] bg-[rgba(242,242,242,1)] p-3 shadow z-50">
-        
+    <div className="border-slate-700 w-full bg-[#F2F2F2] p-2">
+      <div className="flex justify-between items-center fixed top-0 right-[14px] border-b-2 w-[1272px] bg-[#F2F2F2] p-3 shadow z-50">
+
         <h1 className="text-xl text-black font-semibold">Profile Details</h1>
 
         <div className="flex gap-5 items-center">
 
-          {/* SEARCH BAR */}
+          {/* SEARCH */}
           <div className="flex items-center bg-white border border-gray-300 rounded-full px-4 py-2 w-[350px] shadow-sm">
-            <SearchIcon
-              className="text-gray-600 cursor-pointer"
-              size={18}
-              onClick={handleSearch}
-            />
+            <SearchIcon className="text-gray-600 cursor-pointer" size={18} onClick={handleSearch} />
+
             <input
               type="text"
               placeholder="Search..."
@@ -227,7 +258,7 @@ const Search = ({ onSearch }) => {
             />
           </div>
 
-          {/* NOTIFICATION ICON */}
+          {/* NOTIFICATION BELL */}
           <div className="relative" ref={dropdownRef}>
             <svg
               onClick={handleBellClick}
@@ -235,10 +266,10 @@ const Search = ({ onSearch }) => {
               width="30"
               height="30"
               fill="#FFC107"
-              viewBox="0 0 24 24"
               className="cursor-pointer"
+              viewBox="0 0 24 24"
             >
-              <path d="M12 24c1.104 0 2-.897 2-2h-4c0 1.103.896 2 2 2zm6.707-5l1.293 1.293V21H4v-1.707L5.293 19H6v-7c0-3.309 2.691-6 6-6s6 2.691 6 6v7h.707zM18 18H6v-7c0-2.757 2.243-5 5-5s5 2.243 5 5v7z"/>
+              <path d="M12 24c1.104 0 2-.897 2-2h-4c0 1.103.896 2 2 2zm6.707-5 1.293 1.293V21H4v-1.707L5.293 19H6v-7c0-3.309 2.691-6 6-6s6 2.691 6 6v7h.707z" />
             </svg>
 
             {unreadCount > 0 && (
@@ -258,11 +289,10 @@ const Search = ({ onSearch }) => {
                   </button>
                 </div>
 
+                {/* LIST */}
                 <div className="max-h-[300px] overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <p className="text-center py-3 text-gray-500">
-                      No notifications
-                    </p>
+                    <p className="text-center py-3 text-gray-500">No notifications</p>
                   ) : (
                     notifications.map((n) => (
                       <div
@@ -279,19 +309,13 @@ const Search = ({ onSearch }) => {
                           </p>
 
                           {!n.read && (
-                            <button
-                              onClick={() => markAsRead(n._id)}
-                              className="text-blue-600 text-xs mt-1"
-                            >
+                            <button onClick={() => markAsRead(n._id)} className="text-blue-600 text-xs mt-1">
                               Mark as read
                             </button>
                           )}
                         </div>
 
-                        <button
-                          onClick={() => deleteOne(n._id)}
-                          className="text-red-500 text-xs"
-                        >
+                        <button onClick={() => deleteOne(n._id)} className="text-red-500 text-xs">
                           Delete
                         </button>
                       </div>
@@ -309,8 +333,8 @@ const Search = ({ onSearch }) => {
                 )}
               </div>
             )}
-
           </div>
+
         </div>
       </div>
     </div>
