@@ -188,13 +188,13 @@ export default function DashboardFinal() {
       <div className="bg-white rounded-[32px] shadow-xl border border-gray-300 p-10 w-full md:w-1/2 h-full">
 
         {/* Header + Legends */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-8 mb-6">
 
           <h2 className="text-[22px] font-semibold text-gray-900 whitespace-nowrap">
             Running User Trend
           </h2>
 
-          <div className="flex items-center gap-8 text-gray-700 text-[12px] font-semibold whitespace-nowrap">
+          <div className="flex items-center gap-3 text-gray-700 text-[12px] font-semibold whitespace-nowrap">
 
             <div className="flex items-center gap-1">
               <span style={{ width: 8, height: 4, background: "#facc15", borderRadius: 4 }}></span>

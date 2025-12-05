@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState, useMemo } from "react";
 import { Search as SearchIcon, Eye, Loader2 } from "lucide-react";
@@ -73,15 +73,25 @@ const DocumentPopup = ({ user, onClose }) => {
         <div className="max-h-[300px] overflow-y-auto space-y-3">
           {user.adhaarCard?.frontImage && (
             <div className="border rounded-xl shadow p-2">
-              <img src={user.adhaarCard.frontImage} className="w-full rounded-md" />
-              <p className="text-center text-xs mt-1 font-medium">Aadhar Front</p>
+              <img
+                src={user.adhaarCard.frontImage}
+                className="w-full rounded-md"
+              />
+              <p className="text-center text-xs mt-1 font-medium">
+                Aadhar Front
+              </p>
             </div>
           )}
 
           {user.adhaarCard?.backImage && (
             <div className="border rounded-xl shadow p-2">
-              <img src={user.adhaarCard.backImage} className="w-full rounded-md" />
-              <p className="text-center text-xs mt-1 font-medium">Aadhar Back</p>
+              <img
+                src={user.adhaarCard.backImage}
+                className="w-full rounded-md"
+              />
+              <p className="text-center text-xs mt-1 font-medium">
+                Aadhar Back
+              </p>
             </div>
           )}
         </div>
@@ -102,9 +112,9 @@ export default function UserModerationDashboard() {
   const [users, setUsers] = useState([]);
   const [popupUser, setPopupUser] = useState(null);
 
-  const [search, setSearch] = useState("");         // ⭐ global search
-  const [topSearch, setTopSearch] = useState("");   // ⭐ top input only
-  const [tableSearch, setTableSearch] = useState(""); // ⭐ table input only
+  const [search, setSearch] = useState("");
+  const [topSearch, setTopSearch] = useState("");
+  const [tableSearch, setTableSearch] = useState("");
 
   const [status, setStatus] = useState("Status");
   const [gender, setGender] = useState("Gender");
@@ -115,35 +125,34 @@ export default function UserModerationDashboard() {
   const [sortDirection, setSortDirection] = useState("asc");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 10;
+  const perPage = 5; // ⭐ per page 5
 
-  const [counts, setCounts] = useState({
-    total: 0,
-    pending: 0,
-    approved: 0,
-    rejected: 0,
+  const [stats, setStats] = useState({
+    totalRequestsThisWeek: 0,
+    pendingVerification: 0,
+    approvedThisWeek: 0,
+    rejectedDueToMismatch: 0,
   });
 
-  /* FETCH USERS */
+  /* FETCH USERS & STATS */
   useEffect(() => {
     const load = async () => {
       try {
+        // USERS
         const res = await fetch(`${API_URL}/admin/user-verify`);
         const json = await res.json();
-
         setUsers(json.data);
 
-        setCounts({
-          total: json.data.length,
-          pending: json.data.filter((u) => u.adminApprovel === "pending").length,
-          approved: json.data.filter((u) => u.adminApprovel === "approved").length,
-          rejected: json.data.filter((u) => u.adminApprovel === "reject").length,
-        });
+        // TOP 4 BOX STATS
+        const statsRes = await fetch(
+          "https://matrimonial-backend-7ahc.onrender.com/admin/WeeklyRequestStats"
+        );
+        const statsJson = await statsRes.json();
+        setStats(statsJson.data);
       } finally {
         setLoading(false);
       }
     };
-
     load();
   }, []);
 
@@ -201,30 +210,48 @@ export default function UserModerationDashboard() {
     return data;
   }, [users, search, status, gender, sortField, sortDirection]);
 
+  /* PAGINATION SLIDING WINDOW */
   const totalPages = Math.ceil(filtered.length / perPage);
-  const pageData = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  const pageWindow = 5;
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = startPage + pageWindow - 1;
+
+  if (endPage > totalPages) {
+    endPage = totalPages;
+    startPage = Math.max(1, endPage - pageWindow + 1);
+  }
+
+  const visiblePages = [];
+  for (let i = startPage; i <= endPage; i++) visiblePages.push(i);
+
+  const pageData = filtered.slice(
+    (currentPage - 1) * perPage,
+    currentPage * perPage
+  );
 
   return (
     <div className="px-6 py-6">
-
-      {/* ⭐ TOP SEARCH BAR */}
-      <Search 
-        setSearch={setSearch} 
+      {/* TOP SEARCH */}
+      <Search
+        setSearch={setSearch}
         topSearch={topSearch}
         setTopSearch={setTopSearch}
       />
 
       <div className="pt-[px]">
-
-        {/* TOP CARDS */}
+        {/* TOP 4 CARDS WITH LIVE API */}
         <div className="flex justify-center gap-20 mb-10">
           {[
-            ["Total Request This Week", counts.total],
-            ["Pending Verification", counts.pending],
-            ["Approved This Week", counts.approved],
-            ["Rejected Due To Mismatch", counts.rejected],
+            ["Total Request This Week", stats.totalRequestsThisWeek],
+            ["Pending Verification", stats.pendingVerification],
+            ["Approved This Week", stats.approvedThisWeek],
+            ["Rejected Due To Mismatch", stats.rejectedDueToMismatch],
           ].map(([label, val]) => (
-            <div key={label} className="w-[200px] bg-white border p-6 rounded-2xl shadow">
+            <div
+              key={label}
+              className="w-[200px] bg-white border p-6 rounded-2xl shadow"
+            >
               <p className="text-base font-semibold text-center">{label}</p>
               <h2 className="text-3xl font-black text-center mt-2">{val}</h2>
             </div>
@@ -233,19 +260,16 @@ export default function UserModerationDashboard() {
 
         {/* MAIN TABLE */}
         <div className="max-w-7xl mx-auto p-5 border rounded-2xl bg-white shadow">
-
           {/* FILTER BAR */}
           <div className="bg-gray-100 border rounded-xl p-3 flex justify-between items-center">
-
-            {/* ⭐ TABLE SEARCH (independent text) */}
             <div className="relative bg-white w-[300px]">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5" />
               <input
                 placeholder="Search By User ID"
                 value={tableSearch}
                 onChange={(e) => {
-                  setTableSearch(e.target.value); // only table search input updates
-                  setSearch(e.target.value);      // global filter
+                  setTableSearch(e.target.value);
+                  setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
                 className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
@@ -290,23 +314,32 @@ export default function UserModerationDashboard() {
               </div>
             ) : (
               <table className="w-full text-sm">
-
                 <thead>
                   <tr className="bg-[#F7F7F7] text-gray-700">
                     <th className="px-4 py-3 text-left font-semibold border-b">
-                      <button onClick={() => handleSort("name")} className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleSort("name")}
+                        className="flex items-center gap-1"
+                      >
                         Reported User
                         {sortField === "name"
-                          ? sortDirection === "asc" ? "▲" : "▼"
+                          ? sortDirection === "asc"
+                            ? "▲"
+                            : "▼"
                           : "▲"}
                       </button>
                     </th>
 
                     <th className="px-4 py-3 text-left font-semibold border-b">
-                      <button onClick={() => handleSort("date")} className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleSort("date")}
+                        className="flex items-center gap-1"
+                      >
                         Report Date
                         {sortField === "date"
-                          ? sortDirection === "asc" ? "▲" : "▼"
+                          ? sortDirection === "asc"
+                            ? "▲"
+                            : "▼"
                           : "▲"}
                       </button>
                     </th>
@@ -328,7 +361,6 @@ export default function UserModerationDashboard() {
                 <tbody className="divide-y">
                   {pageData.map((user) => (
                     <tr key={user._id} className="hover:bg-gray-50">
-
                       <td className="px-4 py-3">
                         <UserAvatar user={user} />
                       </td>
@@ -368,18 +400,16 @@ export default function UserModerationDashboard() {
                           <Eye size={14} /> View
                         </button>
                       </td>
-
                     </tr>
                   ))}
                 </tbody>
-
               </table>
             )}
           </div>
 
           {/* PAGINATION */}
           <div className="flex justify-center mt-4 items-center gap-3">
-
+            {/* PREV */}
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
@@ -388,48 +418,34 @@ export default function UserModerationDashboard() {
               ‹ Prev
             </button>
 
+            {/* SLIDING PAGE NUMBERS */}
             <div className="flex items-center gap-2 text-sm">
-              {[1, 2, 3, 4].map((page) =>
-                page <= totalPages ? (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`${
-                      currentPage === page
-                        ? "font-bold text-black underline"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ) : null
-              )}
-
-              {totalPages > 4 && <span className="text-gray-500">.....</span>}
-
-              {totalPages > 4 && (
+              {visiblePages.map((page) => (
                 <button
-                  onClick={() => setCurrentPage(totalPages)}
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
                   className={`${
-                    currentPage === totalPages
+                    currentPage === page
                       ? "font-bold text-black underline"
                       : "text-gray-600"
                   }`}
                 >
-                  {totalPages}
+                  {page}
                 </button>
-              )}
+              ))}
             </div>
 
+            {/* NEXT */}
             <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() =>
+                setCurrentPage((p) => Math.min(totalPages, p + 1))
+              }
               disabled={currentPage === totalPages}
               className="text-gray-700 disabled:opacity-40"
             >
               Next ›
             </button>
           </div>
-
         </div>
 
         {/* POPUP */}
