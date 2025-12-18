@@ -358,7 +358,7 @@ const Index = () => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="mt-[75px] w-full px-6">
+      <div className="mt-[7px] w-full px-6">
         <TopSection />
         <AnalyticsChart />
         <UserTable />

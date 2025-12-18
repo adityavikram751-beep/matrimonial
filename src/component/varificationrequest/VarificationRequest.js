@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { Search as SearchIcon, Eye, Loader2 } from "lucide-react";
+import { Search as SearchIcon, Eye, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import Search from "@/src/component/varificationrequest/Search";
 import { API_URL } from "../api/apiURL";
 
@@ -12,20 +12,21 @@ const UserAvatar = ({ user }) => {
     (user.lastName?.[0] || "").toUpperCase();
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 sm:gap-3">
       {user.profileImage ? (
         <img
           src={user.profileImage}
-          className="w-10 h-10 rounded-full object-cover"
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+          alt={`${user.firstName} ${user.lastName}`}
         />
       ) : (
-        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-300 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold">
           {initials}
         </div>
       )}
 
       <div>
-        <p className="font-semibold text-gray-900 text-sm">
+        <p className="font-semibold text-gray-900 text-xs sm:text-sm whitespace-nowrap">
           {user.firstName} {user.lastName}
         </p>
         <p className="text-xs text-gray-500">
@@ -63,9 +64,9 @@ const DocumentPopup = ({ user, onClose }) => {
     <div
       id="popup-bg"
       onClick={closeBg}
-      className="fixed inset-0 bg-black/30 flex items-center justify-center z-[900]"
+      className="fixed inset-0 bg-black/30 flex items-center justify-center z-[900] p-4"
     >
-      <div className="bg-white w-[260px] rounded-xl shadow-xl p-4 animate-fadeIn">
+      <div className="bg-white w-full max-w-[280px] sm:w-[260px] rounded-xl shadow-xl p-4 animate-fadeIn">
         <h3 className="text-center font-semibold text-sm mb-3">
           Documents Uploaded
         </h3>
@@ -76,6 +77,7 @@ const DocumentPopup = ({ user, onClose }) => {
               <img
                 src={user.adhaarCard.frontImage}
                 className="w-full rounded-md"
+                alt="Aadhar Front"
               />
               <p className="text-center text-xs mt-1 font-medium">
                 Aadhar Front
@@ -88,6 +90,7 @@ const DocumentPopup = ({ user, onClose }) => {
               <img
                 src={user.adhaarCard.backImage}
                 className="w-full rounded-md"
+                alt="Aadhar Back"
               />
               <p className="text-center text-xs mt-1 font-medium">
                 Aadhar Back
@@ -98,7 +101,7 @@ const DocumentPopup = ({ user, onClose }) => {
 
         <button
           onClick={onClose}
-          className="w-full bg-black text-white rounded-md py-1.5 mt-3 text-xs"
+          className="w-full bg-black text-white rounded-md py-2 sm:py-1.5 mt-3 text-xs sm:text-xs"
         >
           Close
         </button>
@@ -125,7 +128,7 @@ export default function UserModerationDashboard() {
   const [sortDirection, setSortDirection] = useState("asc");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 5; // ⭐ per page 5
+  const perPage = 5;
 
   const [stats, setStats] = useState({
     totalRequestsThisWeek: 0,
@@ -231,7 +234,7 @@ export default function UserModerationDashboard() {
   );
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6">
       {/* TOP SEARCH */}
       <Search
         setSearch={setSearch}
@@ -239,9 +242,9 @@ export default function UserModerationDashboard() {
         setTopSearch={setTopSearch}
       />
 
-      <div className="pt-[px]">
-        {/* TOP 4 CARDS WITH LIVE API */}
-        <div className="flex justify-center gap-20 mb-10">
+      <div className="pt-4 sm:pt-6">
+        {/* TOP 4 CARDS WITH LIVE API - RESPONSIVE */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 xl:gap-20 mb-8 sm:mb-10">
           {[
             ["Total Request This Week", stats.totalRequestsThisWeek],
             ["Pending Verification", stats.pendingVerification],
@@ -250,20 +253,20 @@ export default function UserModerationDashboard() {
           ].map(([label, val]) => (
             <div
               key={label}
-              className="w-[200px] bg-white border p-6 rounded-2xl shadow"
+              className="w-full bg-white border p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl shadow"
             >
-              <p className="text-base font-semibold text-center">{label}</p>
-              <h2 className="text-3xl font-black text-center mt-2">{val}</h2>
+              <p className="text-sm sm:text-base font-semibold text-center break-words">{label}</p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-center mt-2">{val}</h2>
             </div>
           ))}
         </div>
 
         {/* MAIN TABLE */}
-        <div className="max-w-7xl mx-auto p-5 border rounded-2xl bg-white shadow">
+        <div className="w-full mx-auto p-3 sm:p-4 md:p-5 border rounded-xl sm:rounded-2xl bg-white shadow">
           {/* FILTER BAR */}
-          <div className="bg-gray-100 border rounded-xl p-3 flex justify-between items-center">
-            <div className="relative bg-white w-[300px]">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5" />
+          <div className="bg-gray-100 border rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+            <div className="relative bg-white w-full sm:w-[300px]">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 sm:w-5" />
               <input
                 placeholder="Search By User ID"
                 value={tableSearch}
@@ -272,18 +275,18 @@ export default function UserModerationDashboard() {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-10 pr-3 py-2 border rounded-lg text-sm"
+                className="w-full pl-9 sm:pl-10 pr-3 py-2 border rounded-lg text-xs sm:text-sm"
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
               <select
                 value={status}
                 onChange={(e) => {
                   setStatus(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="border px-3 py-2 bg-gray-200 rounded-md"
+                className="border px-3 py-2 bg-gray-200 rounded-md text-xs sm:text-sm w-full sm:w-auto"
               >
                 <option>Status</option>
                 <option value="approved">Approved</option>
@@ -297,7 +300,7 @@ export default function UserModerationDashboard() {
                   setGender(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="border px-3 py-2 bg-gray-200 rounded-md"
+                className="border px-3 py-2 bg-gray-200 rounded-md text-xs sm:text-sm w-full sm:w-auto"
               >
                 <option>Gender</option>
                 <option>Male</option>
@@ -307,19 +310,19 @@ export default function UserModerationDashboard() {
           </div>
 
           {/* TABLE */}
-          <div className="overflow-x-auto mt-5 rounded-xl border">
+          <div className="overflow-x-auto mt-4 sm:mt-5 rounded-xl border">
             {loading ? (
               <div className="flex justify-center py-10">
-                <Loader2 className="animate-spin w-6 h-6" />
+                <Loader2 className="animate-spin w-6 h-6 sm:w-8 sm:h-8" />
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <table className="w-full text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-[#F7F7F7] text-gray-700">
-                    <th className="px-4 py-3 text-left font-semibold border-b">
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold border-b whitespace-nowrap">
                       <button
                         onClick={() => handleSort("name")}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 w-full text-left"
                       >
                         Reported User
                         {sortField === "name"
@@ -330,10 +333,10 @@ export default function UserModerationDashboard() {
                       </button>
                     </th>
 
-                    <th className="px-4 py-3 text-left font-semibold border-b">
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold border-b whitespace-nowrap">
                       <button
                         onClick={() => handleSort("date")}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 w-full text-left"
                       >
                         Report Date
                         {sortField === "date"
@@ -344,15 +347,15 @@ export default function UserModerationDashboard() {
                       </button>
                     </th>
 
-                    <th className="px-4 py-3 text-left font-semibold border-b">
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold border-b whitespace-nowrap">
                       Documents Submitted
                     </th>
 
-                    <th className="px-4 py-3 text-left font-semibold border-b">
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold border-b whitespace-nowrap">
                       Status
                     </th>
 
-                    <th className="px-4 py-3 text-left font-semibold border-b">
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold border-b whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
@@ -361,28 +364,28 @@ export default function UserModerationDashboard() {
                 <tbody className="divide-y">
                   {pageData.map((user) => (
                     <tr key={user._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <UserAvatar user={user} />
                       </td>
 
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm">
                         {new Date(user.createdAt).toLocaleDateString("en-GB", {
                           day: "2-digit",
-                          month: "long",
+                          month: "short",
                           year: "numeric",
                         })}
                       </td>
 
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                         {user.adhaarCard?.frontImage || user.adhaarCard?.backImage
                           ? "Aadhar Card"
                           : "No Document Submitted"}
                       </td>
 
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`w-3 h-3 rounded-full ${getStatusDot(
+                            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${getStatusDot(
                               user.adminApprovel
                             )}`}
                           ></span>
@@ -392,12 +395,12 @@ export default function UserModerationDashboard() {
                         </div>
                       </td>
 
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <button
                           onClick={() => setPopupUser(user)}
-                          className="flex items-center gap-1 text-blue-700"
+                          className="flex items-center gap-1 text-blue-700 text-xs sm:text-sm"
                         >
-                          <Eye size={14} /> View
+                          <Eye className="w-3 h-3 sm:w-4 sm:h-4" /> View
                         </button>
                       </td>
                     </tr>
@@ -408,23 +411,24 @@ export default function UserModerationDashboard() {
           </div>
 
           {/* PAGINATION */}
-          <div className="flex justify-center mt-4 items-center gap-3">
+          <div className="flex justify-center mt-4 items-center gap-2 sm:gap-3">
             {/* PREV */}
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="text-gray-700 disabled:opacity-40"
+              className="text-gray-700 disabled:opacity-40 text-xs sm:text-sm flex items-center gap-1"
             >
-              ‹ Prev
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Prev</span>
             </button>
 
             {/* SLIDING PAGE NUMBERS */}
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
               {visiblePages.map((page) => (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`${
+                  className={`min-w-[28px] sm:min-w-[32px] h-7 sm:h-8 flex items-center justify-center ${
                     currentPage === page
                       ? "font-bold text-black underline"
                       : "text-gray-600"
@@ -441,9 +445,10 @@ export default function UserModerationDashboard() {
                 setCurrentPage((p) => Math.min(totalPages, p + 1))
               }
               disabled={currentPage === totalPages}
-              className="text-gray-700 disabled:opacity-40"
+              className="text-gray-700 disabled:opacity-40 text-xs sm:text-sm flex items-center gap-1"
             >
-              Next ›
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

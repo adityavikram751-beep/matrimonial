@@ -1,11 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, Download } from 'lucide-react';
 import Papa from 'papaparse';
 import { API_URL } from '../api/apiURL';
 
 export default function UserTable() {
-  const [users, setUsers] = useState([]);
+  const [rawUsers, setRawUsers] = useState([]); // API DATA
+  const [users, setUsers] = useState([]);       // TABLE DATA (FILTERED)
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [genderFilter, setGenderFilter] = useState('');
@@ -17,22 +19,39 @@ export default function UserTable() {
 
   const usersPerPage = 5;
 
+  // ⭐ API FETCH (WORKS EVEN IF SEARCH NOT SUPPORTED)
   const fetchUsers = async () => {
     try {
-      const url = `${API_URL}/admin/user-manage-get?search=${search}&status=${statusFilter}&gender=${genderFilter}&sortField=${sortField}&sortOrder=${asc ? 'asc' : 'desc'}&page=${currentPage}&limit=${usersPerPage}`;
+      const url = `${API_URL}/admin/user-manage-get?search=${encodeURIComponent(
+        search.trim()
+      )}&name=${encodeURIComponent(
+        search.trim()
+      )}&status=${statusFilter.toLowerCase()}&gender=${genderFilter}&sortField=${sortField}&sortOrder=${
+        asc ? 'asc' : 'desc'
+      }&page=${currentPage}&limit=${usersPerPage}`;
+
       const res = await fetch(url);
       const data = await res.json();
 
-      setUsers(data.users || []);
+      setRawUsers(data.users || []);
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
   };
 
+  // ⭐ Fetch on any change
   useEffect(() => {
     fetchUsers();
-  }, [search, statusFilter, genderFilter, sortField, asc, currentPage]);
+  }, [statusFilter, genderFilter, sortField, asc, currentPage, search]);
+
+  // ⭐ LOCAL FILTER (GUARANTEED WORKS EVEN IF API SEARCH FAILS)
+  useEffect(() => {
+    const filtered = rawUsers.filter((u) =>
+      u.name?.toLowerCase().includes(search.toLowerCase())
+    );
+    setUsers(filtered);
+  }, [search, rawUsers]);
 
   const toggleSort = (field) => {
     if (sortField === field) {
@@ -89,9 +108,9 @@ export default function UserTable() {
             className="border border-gray-400 bg-gray-200 cursor-pointer hover:bg-gray-300 text-sm rounded-md px-3 py-2"
           >
             <option value="">Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="reject">Reject</option>
+            <option value="Approved">Approved</option>
+            <option value="Pending">Pending</option>
+            <option value="Reject">Reject</option>
           </select>
 
           <select
@@ -141,7 +160,7 @@ export default function UserTable() {
                 <td className="p-2">{user.joined}</td>
 
                 <td className="p-2">
-                  {user.verified === true || user.verified === 'true' ? (
+                  {user.verified ? (
                     <div className="flex items-center gap-2">
                       <span className="inline-block w-6 h-6 bg-green-700 text-white rounded-sm flex items-center justify-center">✔</span>
                       Yes
@@ -168,28 +187,15 @@ export default function UserTable() {
         </table>
       </div>
 
-      {/* ⭐ DYNAMIC SLIDING PAGINATION (EXACT SCREENSHOT) ⭐ */}
+      {/* PAGINATION */}
       <div className="flex justify-center items-center mt-4 text-sm text-gray-700 space-x-3">
 
-        {/* ◄ Left Arrow */}
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="px-2"
-        >
-          ◄
-        </button>
+        <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-2">◄</button>
 
-        {/* Prev */}
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="px-2"
-        >
-          Prev
-        </button>
+        <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-2">Prev</button>
 
         <span>|</span>
 
-        {/* Dynamic Sliding Page Numbers */}
         {(() => {
           let start = Math.max(1, currentPage - 3);
           let end = Math.min(start + 3, totalPages);
@@ -197,39 +203,20 @@ export default function UserTable() {
           return Array.from({ length: end - start + 1 }, (_, idx) => {
             const num = start + idx;
             return (
-              <span
-                key={num}
-                onClick={() => setCurrentPage(num)}
-                className={`cursor-pointer px-1 ${
-                  currentPage === num ? "font-semibold" : ""
-                }`}
-              >
+              <span key={num} onClick={() => setCurrentPage(num)} className={`cursor-pointer px-1 ${currentPage === num ? "font-semibold" : ""}`}>
                 {num} <span>|</span>
               </span>
             );
           });
         })()}
 
-        {/* Dots */}
         {totalPages > 4 && <span>…..</span>}
 
         <span>|</span>
 
-        {/* Next */}
-        <button
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          className="px-2"
-        >
-          Next
-        </button>
+        <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-2">Next</button>
 
-        {/* ► Right Arrow */}
-        <button
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          className="px-2"
-        >
-          ►
-        </button>
+        <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-2">►</button>
 
       </div>
 

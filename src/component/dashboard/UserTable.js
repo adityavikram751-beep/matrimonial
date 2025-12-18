@@ -164,21 +164,21 @@ export default function UsersPage() {
   const end = Math.min(start + windowSize - 1, totalPages);
 
   return (
-    <div className="p-6 max-w-full mx-[-12px]">
+    <div className="p-4 sm:p-6 w-full overflow-x-hidden">
 
       {/* ---------------- USERS TABLE ---------------- */}
-      <div className="bg-white rounded-2xl shadow-md border border-gray-500 p-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-500 p-3 sm:p-4">
 
         {/* SEARCH + FILTERS */}
-        <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
 
           {/* SEARCH BOX */}
-          <div className="flex items-center gap-2 px-4 py-2 border rounded-xl bg-white shadow-sm w-[300px]">
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border rounded-xl bg-white shadow-sm w-full sm:w-[300px]">
             <Image src="/search.png" width={18} height={18} alt="Search" />
             <input
               type="text"
               placeholder="Search By User ID"
-              className="w-full outline-none"
+              className="w-full outline-none text-sm sm:text-base"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -188,9 +188,9 @@ export default function UsersPage() {
           </div>
 
           {/* FILTERS + EXPORT */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <select
-              className="border bg-gray-200 px-3 py-2 rounded-lg"
+              className="border bg-gray-200 px-3 py-2 rounded-lg text-sm sm:text-base w-full sm:w-auto"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -204,7 +204,7 @@ export default function UsersPage() {
             </select>
 
             <select
-              className="border bg-gray-200 px-3 py-2 rounded-lg"
+              className="border bg-gray-200 px-3 py-2 rounded-lg text-sm sm:text-base w-full sm:w-auto"
               value={genderFilter}
               onChange={(e) => {
                 setGenderFilter(e.target.value);
@@ -219,7 +219,7 @@ export default function UsersPage() {
             {/* EXPORT CSV BUTTON */}
             <button
               onClick={handleExportCSV}
-              className="px-4 py-2 bg-gray-200 rounded-lg border border-gray-600 hover:bg-gray-100"
+              className="px-3 sm:px-4 py-2 bg-gray-200 rounded-lg border border-gray-600 hover:bg-gray-100 text-sm sm:text-base w-full sm:w-auto"
             >
               Export CSV
             </button>
@@ -228,8 +228,8 @@ export default function UsersPage() {
         </div>
 
         {/* ---------------- TABLE ---------------- */}
-        <div className="overflow-auto border-t border-gray-300">
-          <table className="min-w-full text-sm">
+        <div className="overflow-x-auto border-t border-gray-300">
+          <table className="min-w-[800px] w-full text-xs sm:text-sm">
             <thead className="bg-gray-100">
               <tr>
                 {[
@@ -244,7 +244,7 @@ export default function UsersPage() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-4 py-3 border-b border-gray-300 font-semibold text-gray-800"
+                    className="text-left px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-300 font-semibold text-gray-800 whitespace-nowrap"
                   >
                     {h}
                   </th>
@@ -265,13 +265,13 @@ export default function UsersPage() {
                     key={idx}
                     className="border-b border-gray-200 hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3">{user.id}</td>
-                    <td className="px-4 py-3">{user.name}</td>
-                    <td className="px-4 py-3">{user.location}</td>
-                    <td className="px-4 py-3">{user.gender}</td>
-                    <td className="px-4 py-3">{user.joined}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 truncate max-w-[120px]">{user.id}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">{user.name}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 truncate max-w-[150px]">{user.location}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3">{user.gender}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">{user.joined}</td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3">
                       {user.verified === "Yes" ? (
                         <span className="text-green-600">✔ Yes</span>
                       ) : (
@@ -279,10 +279,10 @@ export default function UsersPage() {
                       )}
                     </td>
 
-                    <td className="px-4 py-3 capitalize">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 capitalize">
                       <span className="flex items-center gap-2">
                         <span
-                          className={`w-3 h-3 rounded-full ${
+                          className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
                             user.status === "Approved"
                               ? "bg-green-500"
                               : user.status === "Pending"
@@ -290,11 +290,11 @@ export default function UsersPage() {
                               : "bg-red-500"
                           }`}
                         ></span>
-                        {user.status}
+                        <span className="whitespace-nowrap">{user.status}</span>
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">{user.lastActive}</td>
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">{user.lastActive}</td>
                   </tr> 
                 ))
               ) : (
@@ -309,24 +309,24 @@ export default function UsersPage() {
         </div>
 
         {/* ---------------- PAGINATION ---------------- */}
-        <div className="flex justify-center items-center gap-2 mt-6 text-gray-700">
+        <div className="flex flex-wrap justify-center items-center gap-1 sm:gap-2 mt-4 sm:mt-6 text-gray-700 text-sm sm:text-base">
 
           <button
             onClick={() => setCurrentPage(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`${currentPage === 1 ? "text-gray-400" : "hover:underline"}`}
+            className={`px-2 py-1 ${currentPage === 1 ? "text-gray-400" : "hover:underline"}`}
           >
             ◄ Prev
           </button>
 
-          <span>|</span>
+          <span className="hidden sm:inline">|</span>
 
           {Array.from({ length: end - start + 1 }, (_, i) => start + i).map(
             (page, idx, arr) => (
-              <div key={page} className="flex items-center gap-2">
+              <div key={page} className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={() => setCurrentPage(page)}
-                  className={`${
+                  className={`px-2 py-1 ${
                     page === currentPage
                       ? "font-bold underline"
                       : "hover:underline"
@@ -335,18 +335,18 @@ export default function UsersPage() {
                   {page}
                 </button>
 
-                {idx !== arr.length - 1 && <span>|</span>}
+                {idx !== arr.length - 1 && <span className="hidden sm:inline">|</span>}
               </div>
             )
           )}
 
-          {end < totalPages && <span>.....</span>}
-          <span>|</span>
+          {end < totalPages && <span className="hidden sm:inline">.....</span>}
+          <span className="hidden sm:inline">|</span>
 
           <button
             onClick={() => setCurrentPage(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className={`${
+            className={`px-2 py-1 ${
               currentPage === totalPages ? "text-gray-400" : "hover:underline"
             }`}
           >
@@ -356,35 +356,37 @@ export default function UsersPage() {
       </div>
 
       {/* ---------------- BANNER SECTION ---------------- */}
-      <div className="bg-white rounded-2xl shadow-md border border-gray-500 p-6 mt-10">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-500 p-4 sm:p-6 mt-6 sm:mt-10">
 
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">Current Images</h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">Current Images</h2>
 
-        <div className="flex gap-6 flex-wrap">
+        <div className="flex flex-wrap gap-3 sm:gap-6 justify-center sm:justify-start">
 
           {banners.map((banner) => (
             <div
               key={banner._id}
-              className="rounded-xl overflow-hidden shadow-md border border-gray-300 w-[300px] relative"
+              className="rounded-xl overflow-hidden shadow-md border border-gray-300 w-full sm:w-[280px] md:w-[300px] relative"
             >
-              <Image
-                src={banner.image}
-                width={320}
-                height={180}
-                alt="banner"
-                className="w-full h-[180px] object-cover"
-              />
+              <div className="relative w-full h-[160px] sm:h-[180px]">
+                <Image
+                  src={banner.image}
+                  fill
+                  alt="banner"
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 300px"
+                />
+              </div>
 
-              <div className="absolute bottom-0 left-0 w-full bg-white/60 backdrop-blur-md px-3 py-3 flex justify-between items-center">
+              <div className="absolute bottom-0 left-0 w-full bg-white/60 backdrop-blur-md px-3 py-3 flex flex-col sm:flex-row justify-between items-center gap-2">
 
-                {/* EDIT BUTTON — EXACT RED OUTLINE */}
+                {/* EDIT BUTTON */}
                 <button
                   onClick={() => handleUpdateBanner(banner._id)}
-                  className="flex items-center gap-2 px-6 py-2 border-2 border-red-500 text-red-500 rounded-xl text-base font-semibold"
+                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 border-2 border-red-500 text-red-500 rounded-xl text-sm sm:text-base font-semibold w-full sm:w-auto"
                 >
                   <svg
-                    width="22"
-                    height="22"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="red"
@@ -398,14 +400,14 @@ export default function UsersPage() {
                   Edit
                 </button>
 
-                {/* DELETE BUTTON — EXACT RED OUTLINE */}
+                {/* DELETE BUTTON */}
                 <button
                   onClick={() => handleDeleteBanner(banner._id)}
-                  className="flex items-center gap-2 px-6 py-2 border-2 border-red-500 text-red-500 rounded-xl text-base font-semibold"
+                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 border-2 border-red-500 text-red-500 rounded-xl text-sm sm:text-base font-semibold w-full sm:w-auto"
                 >
                   <svg
-                    width="22"
-                    height="22"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="red"
@@ -425,8 +427,8 @@ export default function UsersPage() {
             </div>
           ))}
 
-          {/* ADD MORE EXACT UI */}
-          <label className="w-[150px] h-[150px] flex flex-col justify-center items-center border-4 border-[#b43f4a] text-[#b43f4a] rounded-2xl cursor-pointer text-xl font-bold">
+          {/* ADD MORE BUTTON */}
+          <label className="w-full sm:w-[150px] h-[120px] sm:h-[150px] flex flex-col justify-center items-center border-4 border-[#b43f4a] text-[#b43f4a] rounded-xl sm:rounded-2xl cursor-pointer text-xl font-bold hover:bg-gray-50 transition-colors">
             +
             <span className="text-sm font-semibold mt-1">Add More</span>
             <input type="file" className="hidden" onChange={handleAddBanner} />

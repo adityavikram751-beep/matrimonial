@@ -43,7 +43,7 @@ export default function AnalyticsPage() {
     return i === 0 ? "December" : MONTHS[i - 1];
   }
 
-  // STATES (same UI)
+  // STATES
   const [selectedMonth, setSelectedMonth] = useState("December");
   const [previousMonth, setPreviousMonth] = useState("November");
   const [genderData, setGenderData] = useState([]);
@@ -54,9 +54,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [hover, setHover] = useState(null);
 
-  // -------------------------------------------
-  // LOAD DATA BY MONTH → FINAL FIX
-  // -------------------------------------------
+  // LOAD DATA BY MONTH
   useEffect(() => {
     let mounted = true;
 
@@ -175,15 +173,13 @@ export default function AnalyticsPage() {
   if (loading)
     return <div className="p-8 text-center text-gray-500">Loading...</div>;
 
-  // -------------------------------------------
-  // UI SAME (I did NOT change anything here)
-  // -------------------------------------------
   return (
-    <div className="p-8 min-h-screen">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-54">
+    <div className="p-4 md:p-8 min-h-screen bg-gray-50">
+      
+      <div className="flex flex-col xl:flex-row gap-8 max-w-[1250px] mx-auto">
 
-        {/* LEFT */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border h-[700px] p-6 w-[140%]">
+        {/* LEFT: Sign-In Analytics (Line Chart) */}
+        <div className="bg-white rounded-2xl shadow-lg border h-[700px] p-6 w-full xl:w-[700px]">
 
           <div className="flex justify-between items-start">
             <div>
@@ -248,11 +244,11 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="flex flex-col gap-8">
+        {/* RIGHT: Gender and Matchmaking Charts */}
+        <div className="flex flex-col gap-8 w-full xl:w-[500px]">
 
           {/* GENDER */}
-          <div className="bg-white rounded-2xl shadow-lg border p-4 relative h-[330px] w-[380%]">
+          <div className="bg-white rounded-2xl shadow-lg border p-4 relative h-[330px] w-full">
             {hover && (
               <div
                 style={{
@@ -302,7 +298,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* MATCHMAKING */}
-          <div className="bg-white rounded-2xl shadow-lg border p-4 relative h-[340px] w-[480px] overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg border p-4 relative h-[340px] w-full overflow-hidden">
 
             {hover && (
               <div

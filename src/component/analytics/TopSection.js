@@ -66,7 +66,7 @@ export default function DashboardFinal() {
     chart: {
       type: "line",
       height: 310,
-      backgroundColor: "#ffffff",
+      backgroundColor: "transparent",
       spacingLeft: 10,
       spacingRight: 10,
       spacingTop: 15,
@@ -81,7 +81,7 @@ export default function DashboardFinal() {
       categories: WEEK_ORDER.map((d) => WEEK_LABELS[d]),
       tickLength: 0,
       labels: {
-        style: { fontSize: "16px", fontWeight: 600, color: "#4b5563" },
+        style: { fontSize: "14px", fontWeight: 600, color: "#4b5563" },
         y: 20,
       },
     },
@@ -93,7 +93,7 @@ export default function DashboardFinal() {
       tickPositions: [0, 5, 10, 15, 20, 25,30],
       labels: {
         formatter() { return this.value; },
-        style: { fontSize: "15px", fontWeight: 500, color: "#6b7280" },
+        style: { fontSize: "13px", fontWeight: 500, color: "#6b7280" },
       },
     },
 
@@ -113,7 +113,7 @@ export default function DashboardFinal() {
       backgroundColor: "#fff",
       borderRadius: 10,
       borderWidth: 1,
-      style: { fontSize: "15px" },
+      style: { fontSize: "13px" },
     },
 
     series: [
@@ -133,102 +133,114 @@ export default function DashboardFinal() {
   };
 
   /* -----------------------------------
-       UI SAME — NOT TOUCHING THIS PART
+       FIXED UI - RESPONSIVE
   ------------------------------------*/
   return (
-    <div className="mt-24 px-6 flex flex-col md:flex-row gap-10 w-full items-stretch">
+    <div className="mt-24 px-4 md:px-6 w-full max-w-[100vw] overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch max-w-full">
+        
+        {/* LEFT — SEARCH TO MATCH */}
+        <div className="bg-white rounded-[32px] shadow-xl border border-gray-300 p-4 md:p-6 w-full lg:w-[45%] h-full max-w-full overflow-hidden">
+          <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">Search To Match</h2>
 
-      {/* LEFT — SEARCH TO MATCH */}
-      <div className="bg-white rounded-[32px] shadow-xl border border-gray-300 p-6 w-full md:w-[45%] h-full">
-        <h2 className="text-2xl font-bold mb-10">Search To Match</h2>
+          <div className="space-y-4 md:space-y-6 w-full max-w-full overflow-auto">
+            {funnelData.map((item, index) => {
+              const max = funnelData[0]?.value || 1;
+              const pct = (item.value / max) * 100;
 
-        <div className="space-y-6">
-          {funnelData.map((item, index) => {
-            const max = funnelData[0]?.value || 1;
-            const pct = (item.value / max) * 100;
-
-            return (
-              <div key={index} className="flex items-center justify-between">
-
-                <div className="w-[200px] text-[17px] font-semibold text-gray-800">
-                  {item.stage}
-                </div>
-
-                <div className="w-[430px] mx-4">
-                  <div
-                    className="w-full h-[32px] bg-gray-200 rounded-full overflow-hidden"
-                    style={{
-                      boxShadow:
-                        "inset 0 2px 4px rgba(0,0,0,0.18), inset 0 -2px 4px rgba(255,255,255,0.4)",
-                    }}
-                  >
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${pct}%`,
-                        background: "linear-gradient(90deg,#3A47FF,#001BFF)",
-                        borderRadius: 18,
-                        filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.35))",
-                      }}
-                    ></div>
+              return (
+                <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 w-full max-w-full">
+                  
+                  {/* Stage Name - Fixed Width */}
+                  <div className="w-full sm:w-[160px] md:w-[180px] text-sm md:text-base font-semibold text-gray-800 truncate">
+                    {item.stage}
                   </div>
-                </div>
 
-                <div className="w-[100px] text-right text-[18px] font-semibold text-gray-900">
-                  {item.value}
-                </div>
+                  {/* Progress Bar - Flexible */}
+                  <div className="w-full sm:flex-1 mx-0 sm:mx-4 min-w-0">
+                    <div className="w-full h-[28px] md:h-[32px] bg-gray-200 rounded-full overflow-hidden"
+                      style={{
+                        boxShadow: "inset 0 2px 4px rgba(0,0,0,0.18), inset 0 -2px 4px rgba(255,255,255,0.4)",
+                      }}
+                    >
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${pct}%`,
+                          background: "linear-gradient(90deg,#3A47FF,#001BFF)",
+                          borderRadius: 18,
+                          filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.35))",
+                        }}
+                      ></div>
+                    </div>
+                  </div>
 
-              </div>
-            );
-          })}
+                  {/* Value - Fixed Width */}
+                  <div className="w-full sm:w-[80px] md:w-[100px] text-right text-base md:text-lg font-semibold text-gray-900">
+                    {item.value}
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* RIGHT — RUNNING USER TREND */}
-      <div className="bg-white rounded-[32px] shadow-xl border border-gray-300 p-10 w-full md:w-1/2 h-full">
+        {/* RIGHT — RUNNING USER TREND */}
+        <div className="bg-white rounded-[32px] shadow-xl border border-gray-300 p-4 md:p-6 w-full lg:w-[55%] h-full max-w-full overflow-hidden">
+          
+          {/* Header + Legends - Responsive */}
+          <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 mb-4 md:mb-6 max-w-full">
+            
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 whitespace-nowrap">
+              Running User Trend
+            </h2>
 
-        {/* Header + Legends */}
-        <div className="flex items-center gap-8 mb-6">
+            <div className="flex flex-wrap items-center gap-3 text-gray-700 text-xs font-semibold max-w-full">
+              
+              <div className="flex items-center gap-1 flex-nowrap">
+                <span className="hidden md:inline" style={{ width: 8, height: 4, background: "#facc15", borderRadius: 4 }}></span>
+                <span style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  border: "3px solid #facc15",
+                  background: "#fff"
+                }}></span>
+                <span className="hidden md:inline" style={{ width: 8, height: 4, background: "#facc15", borderRadius: 4 }}></span>
+                <span className="text-xs md:text-sm">New Registered Users</span>
+              </div>
 
-          <h2 className="text-[22px] font-semibold text-gray-900 whitespace-nowrap">
-            Running User Trend
-          </h2>
+              <div className="flex items-center gap-1 flex-nowrap">
+                <span className="hidden md:inline" style={{ width: 8, height: 4, background: "#16a34a", borderRadius: 4 }}></span>
+                <span style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  border: "3px solid #16a34a",
+                  background: "#fff"
+                }}></span>
+                <span className="hidden md:inline" style={{ width: 8, height: 4, background: "#16a34a", borderRadius: 4 }}></span>
+                <span className="text-xs md:text-sm">Returning Users</span>
+              </div>
 
-          <div className="flex items-center gap-3 text-gray-700 text-[12px] font-semibold whitespace-nowrap">
-
-            <div className="flex items-center gap-1">
-              <span style={{ width: 8, height: 4, background: "#facc15", borderRadius: 4 }}></span>
-              <span style={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                border: "3px solid #facc15",
-                background: "#fff"
-              }}></span>
-              <span style={{ width: 8, height: 4, background: "#facc15", borderRadius: 4 }}></span>
-              <span>New Registered Users</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <span style={{ width: 8, height: 4, background: "#16a34a", borderRadius: 4 }}></span>
-              <span style={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                border: "3px solid #16a34a",
-                background: "#fff"
-              }}></span>
-              <span style={{ width: 8, height: 4, background: "#16a34a", borderRadius: 4 }}></span>
-              <span>Returning Users</span>
             </div>
 
           </div>
 
+          {/* Chart Container */}
+          <div className="w-full max-w-full overflow-auto">
+            <div className="min-w-[500px] md:min-w-0">
+              <HighchartsReact 
+                highcharts={Highcharts} 
+                options={chartOptions} 
+                containerProps={{ style: { width: '100%', maxWidth: '100%' } }}
+              />
+            </div>
+          </div>
+          
         </div>
-
-        <HighchartsReact highcharts={Highcharts} options={chartOptions} />
       </div>
-
     </div>
   );
 }
