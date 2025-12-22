@@ -1,0 +1,38 @@
+{
+  "pages": {
+    "/_app": [
+      "static/chunks/7f757_next_dist_compiled_431df076._.js",
+      "static/chunks/7f757_next_dist_shared_lib_30c202bc._.js",
+      "static/chunks/7f757_next_dist_client_7a255a98._.js",
+      "static/chunks/7f757_next_dist_9a2364ea._.js",
+      "static/chunks/7f757_next_6014e3ed._.js",
+      "static/chunks/7f757_react-dom_e2eaefe5._.js",
+      "static/chunks/7f757_react-icons_ba533dae._.js",
+      "static/chunks/7f757_1521c0a6._.js",
+      "static/chunks/[root-of-the-server]__9fe78027._.js",
+      "static/chunks/OneDrive_Desktop_matrimonial-admin_styles_globals_99f14f6c.css",
+      "static/chunks/OneDrive_Desktop_matrimonial-admin_pages__app_2da965e7._.js",
+      "static/chunks/turbopack-OneDrive_Desktop_matrimonial-admin_pages__app_9fa99195._.js"
+    ],
+    "/_error": [
+      "static/chunks/7f757_next_dist_compiled_e81a4aed._.js",
+      "static/chunks/7f757_next_dist_shared_lib_ca4e41af._.js",
+      "static/chunks/7f757_next_dist_client_b68161cb._.js",
+      "static/chunks/7f757_next_dist_7568f0e4._.js",
+      "static/chunks/7f757_next_error_4a32ae35.js",
+      "static/chunks/[next]_entry_page-loader_ts_8bcdb0ee._.js",
+      "static/chunks/7f757_react-dom_e2eaefe5._.js",
+      "static/chunks/7f757_8431d9da._.js",
+      "static/chunks/[root-of-the-server]__7d81a8ed._.js",
+      "static/chunks/OneDrive_Desktop_matrimonial-admin_pages__error_2da965e7._.js",
+      "static/chunks/turbopack-OneDrive_Desktop_matrimonial-admin_pages__error_f0509833._.js"
+    ]
+  },
+  "devFiles": [],
+  "polyfillFiles": [],
+  "lowPriorityFiles": [
+    "static/development/_ssgManifest.js",
+    "static/development/_buildManifest.js"
+  ],
+  "rootMainFiles": []
+}

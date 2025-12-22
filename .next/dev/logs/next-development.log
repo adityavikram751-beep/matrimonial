@@ -1,0 +1,181 @@
+[00:00:04.785] Server  LOG      ✓ Ready in 3.2s
+[00:00:08.299] Server  LOG      ○ Compiling / ...
+[00:00:26.765] Server  LOG      ○ Compiling /dashboard ...
+[00:00:28.136] Server  WARN     ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
+[00:00:28.301] Browser WARN    Image with src "/loading2.gif" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:29.376] Browser WARN    Image with src "https://res.cloudinary.com/doexczvsl/image/upload/v1765974234/chat-files/1765974232852-bg.webp.webp" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:00:29.833] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:00:29.833] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:00:30.880] Browser LOG     🔵 SOCKET CONNECTED: rg7u-o-B6WBguTI7AAAJ
+[00:00:35.171] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:00:35.172] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:04:17.884] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:04:17.884] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:06:01.538] Browser WARN    Highcharts warning: Consider including the "accessibility.js" module to make your chart more usable for people with disabilities. Set the "accessibility.enabled" option to false to remove this warning. See https://www.highcharts.com/docs/accessibility/accessibility-module.
+[00:06:01.538] Browser LOG     🟢 Socket Active For Analytics Page
+[00:06:01.538] Browser LOG     🟢 Socket Active For Analytics Page
+[00:06:02.075] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:06:02.075] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:06:09.424] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:06:09.424] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:31:05.166] Browser LOG     🔴 SOCKET DISCONNECTED
+[00:31:07.166] Browser LOG     🔵 SOCKET CONNECTED: hHMzMOZxBzVl6oH8AAAB
+[00:37:39.082] Browser WARN    Image with src "/loading2.gif" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:37:39.082] Browser WARN    Image with src "/loading2.gif" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:37:43.422] Browser LOG     🔵 SOCKET CONNECTED: undefined
+[00:37:44.331] Browser LOG     🔵 SOCKET CONNECTED: 4MV0fBw9Jop33dg3AAAT
+[00:37:57.541] Browser WARN    Image with src "/location.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:38:03.697] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:38:03.697] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:39:57.362] Browser WARN    Image with src "/loading2.gif" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:39:57.362] Browser WARN    Image with src "/loading2.gif" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:40:01.011] Browser LOG     🔵 SOCKET CONNECTED: undefined
+[00:40:01.961] Browser LOG     🔵 SOCKET CONNECTED: 2kn6IZNcZjF7-QlVAAAZ
+[00:40:13.052] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:40:13.052] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:41:57.719] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:41:57.719] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:45:08.769] Browser WARN    Image with src "/location.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:45:19.643] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:45:19.643] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:45:33.873] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:45:33.874] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:45:42.943] Browser WARN    Image with src "/loading2.gif" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:45:42.943] Browser WARN    Image with src "/loading2.gif" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:45:46.570] Browser LOG     🔵 SOCKET CONNECTED: undefined
+[00:45:47.525] Browser LOG     🔵 SOCKET CONNECTED: tsLlmaIt2m2Y_D4VAAAf
+[00:46:01.418] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:46:01.418] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:47:36.453] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:47:36.454] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:47:47.405] Browser WARN    Image with src "/location.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:47:56.537] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:47:56.537] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:51:15.609] Browser WARN    Image with src "/loading2.gif" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:51:15.609] Browser WARN    Image with src "/loading2.gif" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:51:20.478] Browser LOG     🔵 SOCKET CONNECTED: undefined
+[00:51:21.409] Browser LOG     🔵 SOCKET CONNECTED: caXJiZfQIUc3KFDyAAAE
+[00:51:23.789] Browser WARN    Image with src "/location.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:52:18.934] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:52:18.934] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:52:55.002] Browser WARN    Highcharts warning: Consider including the "accessibility.js" module to make your chart more usable for people with disabilities. Set the "accessibility.enabled" option to false to remove this warning. See https://www.highcharts.com/docs/accessibility/accessibility-module.
+[00:52:55.002] Browser LOG     🟢 Socket Active For Analytics Page
+[00:52:55.002] Browser LOG     🟢 Socket Active For Analytics Page
+[00:52:56.107] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:52:56.107] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:54:48.382] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:54:48.382] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:54:49.716] Browser LOG     🟢 Socket Active For Analytics Page
+[00:54:49.716] Browser LOG     🟢 Socket Active For Analytics Page
+[00:54:51.140] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:54:51.140] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:57:23.236] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:57:23.236] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:57:41.687] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:57:41.687] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:58:05.634] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:58:05.634] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[00:58:25.260] Browser WARN    Image with src "/loading2.gif" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:58:25.261] Browser WARN    Image with src "/loading2.gif" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[00:58:29.461] Browser LOG     🔵 SOCKET CONNECTED: undefined
+[00:58:30.401] Browser LOG     🔵 SOCKET CONNECTED: bU8bJ5Oqi-xc1bE-AAAW
+[00:59:22.422] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[00:59:22.422] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[01:01:22.839] Browser LOG     🔴 SOCKET DISCONNECTED
+[01:01:22.839] Browser LOG     🔴 SOCKET DISCONNECTED
+[01:01:26.530] Browser LOG     🔵 SOCKET CONNECTED: undefined
+[01:01:27.421] Browser LOG     🔵 SOCKET CONNECTED: AgfO_B7bUnJc0VmFAAAN
+[01:01:28.581] Browser WARN    Image with src "/loading2.gif" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[01:01:30.279] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[01:01:30.279] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[01:01:30.621] Browser LOG     🔵 SOCKET CONNECTED: TyMX7OF6wY5Tm0_RAAAQ
+[01:06:36.791] Server  LOG      ✓ Compiled in 783ms
+[01:07:43.157] Server  LOG      ✓ Compiled in 100ms
+[01:09:04.782] Server  LOG      ✓ Compiled in 119ms
+[01:10:01.006] Server  LOG      ✓ Compiled in 95ms
+[01:12:45.884] Server  LOG      ✓ Compiled in 350ms
+[01:12:52.851] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[01:12:52.851] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[01:13:08.809] Browser WARN    Image with src "/location.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[01:13:18.695] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[01:13:18.695] Browser LOG     🟢 REAL-TIME SOCKET ACTIVE (Manage Users)
+[01:13:27.111] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[01:13:27.111] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.

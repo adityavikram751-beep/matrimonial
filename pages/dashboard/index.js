@@ -285,7 +285,7 @@ const Index = () => {
       <div className="fixed top-0 left-0 h-full w-[250px] bg-white shadow-md border-r p-4"></div>
 
       {/* TOP BAR */}
-      <div className="fixed top-0 left-[250px] w-[calc(100%-250px)] h-[65px] bg-[#F7F7F7] border-b shadow-sm flex items-center justify-between px-10 z-50">
+      <div className="fixed top-0 left-[250px] w-[calc(100%-250px)] h-[65px] bg-gray-100 border-b shadow-sm flex items-center justify-between px-10 z-50">
         <h1 className="text-[28px] font-extrabold text-black">Dashboard</h1>
 
         <div className="relative cursor-pointer" ref={dropdownRef}>

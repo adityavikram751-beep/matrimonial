@@ -174,7 +174,7 @@ export default function AnalyticsPage() {
     return <div className="p-8 text-center text-gray-500">Loading...</div>;
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gray-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gray-100">
       
       <div className="flex flex-col xl:flex-row gap-8 max-w-[1250px] mx-auto">
 

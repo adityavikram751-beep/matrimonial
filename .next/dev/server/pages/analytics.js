@@ -1,0 +1,12 @@
+var R=require("../chunks/ssr/[turbopack]_runtime.js")("server/pages/analytics.js")
+R.c("server/chunks/ssr/[externals]_highcharts-react-official_d5340d0c._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__6886dfec._.js")
+R.c("server/chunks/ssr/7f757_next_86e932a2._.js")
+R.c("server/chunks/ssr/7f757_recharts_es6_c7afcf0d._.js")
+R.c("server/chunks/ssr/7f757_7ec7d176._.js")
+R.c("server/chunks/ssr/7f757_7ae70a38._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__aeae6753._.js")
+R.c("server/chunks/ssr/7f757_387d73b5._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__fc47eccd._.js")
+R.m("[project]/OneDrive/Desktop/matrimonial-admin/node_modules/next/dist/esm/build/templates/pages.js { INNER_PAGE => \"[project]/OneDrive/Desktop/matrimonial-admin/pages/analytics/index.js [ssr] (ecmascript)\", INNER_DOCUMENT => \"[project]/OneDrive/Desktop/matrimonial-admin/pages/_document.js [ssr] (ecmascript)\", INNER_APP => \"[project]/OneDrive/Desktop/matrimonial-admin/pages/_app.js [ssr] (ecmascript)\" } [ssr] (ecmascript)")
+module.exports=R.m("[project]/OneDrive/Desktop/matrimonial-admin/node_modules/next/dist/esm/build/templates/pages.js { INNER_PAGE => \"[project]/OneDrive/Desktop/matrimonial-admin/pages/analytics/index.js [ssr] (ecmascript)\", INNER_DOCUMENT => \"[project]/OneDrive/Desktop/matrimonial-admin/pages/_document.js [ssr] (ecmascript)\", INNER_APP => \"[project]/OneDrive/Desktop/matrimonial-admin/pages/_app.js [ssr] (ecmascript)\" } [ssr] (ecmascript)").exports

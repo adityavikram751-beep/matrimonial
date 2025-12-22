@@ -32,7 +32,18 @@ export default function UserTable() {
       const data = await res.json();
 
       if (data.success) {
-        setUsers(data.data);
+        // Map users with verification status based on their approval status
+        const usersWithVerification = data.data.map(user => ({
+          ...user,
+          // If status is approved, show verified as Yes, otherwise No
+          verified: user.status === 'approved' 
+            ? 'Yes' 
+            : user.status === 'pending' || user.status === 'reject' 
+              ? 'No' 
+              : 'No' // For blocked and other statuses
+        }));
+        
+        setUsers(usersWithVerification);
         setTotalPages(data.totalPages);
       }
     } catch (err) {
@@ -148,7 +159,7 @@ export default function UserTable() {
                 <td className="p-2 border">{user.joined}</td>
 
                 <td className="p-2 border text-center">
-                  {user.mobile ? (
+                  {user.verified === 'Yes' ? (
                     <span className="text-green-600 font-semibold">✔ Yes</span>
                   ) : (
                     <span className="text-red-600 font-semibold">✘ No</span>
@@ -167,7 +178,9 @@ export default function UserTable() {
                           ? 'bg-yellow-500'
                           : user.status === 'blocked'
                           ? 'bg-red-600'
-                          : 'bg-gray-500'
+                          : user.status === 'reject'
+                          ? 'bg-gray-500'
+                          : 'bg-gray-300'
                       }`}
                     ></span>
                     <span className="font-medium capitalize">
